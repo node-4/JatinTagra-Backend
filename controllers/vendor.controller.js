@@ -3,11 +3,24 @@ const jwt = require("jsonwebtoken");
 const authConfig = require("../configs/auth.config");
 var newOTP = require("otp-generators");
 const User = require("../models/user.model");
-const vendorDetails = require("../models/vendorDetails");
 const Category = require("../models/CategoryModel");
+const helpandSupport = require('../models/helpAndSupport');
+const banner = require('../models/banner');
+const vendorDetails = require("../models/vendorDetails");
 const Product = require("../models/product.model");
 const Discount = require("../models/discount.model");
-
+const transaction = require('../models/transactionModel');
+const Wishlist = require("../models/WishlistModel");
+const Address = require("../models/AddressModel");
+const userCard = require("../models/userCard");
+const staticContent = require('../models/staticContent');
+const Faq = require("../models/faq.Model");
+const cloudinary = require("cloudinary");
+cloudinary.config({
+        cloud_name: "https-www-pilkhuwahandloom-com",
+        api_key: "886273344769554",
+        api_secret: "BVicyMGE04PrE7vWSorJ5txKmPs",
+});
 exports.registration = async (req, res) => {
         const { phone, email } = req.body;
         try {
@@ -116,7 +129,7 @@ exports.loginWithPhone = async (req, res) => {
                 userObj.otp = newOTP.generate(4, { alphabets: false, upperCase: false, specialChar: false, });
                 userObj.otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
                 userObj.accountVerification = false;
-                const updated = await User.findOneAndUpdate({ phone: phone }, userObj, { new: true, });
+                const updated = await User.findOneAndUpdate({ phone: phone, userType: "VENDOR"  }, userObj, { new: true, });
                 res.status(200).send({ userId: updated._id, otp: updated.otp });
         } catch (error) {
                 console.error(error);
@@ -232,6 +245,18 @@ exports.addProduct = async (req, res) => {
                         if (!findCategory) {
                                 return res.status(404).json({ message: "Category Not found", data: {} });
                         } else {
+                                let Images = [];
+                                if (req.body.images) {
+                                        for (let i = 0; i < req.body.images.length; i++) {
+                                                var result = await cloudinary.uploader.upload(req.body.images[i], { resource_type: "auto" });
+                                                let obj = {
+                                                        img: result.secure_url
+                                                };
+                                                Images.push(obj)
+
+                                        }
+                                }
+
                                 let obj = {
                                         vendorId: data._id,
                                         category: findCategory._id,
@@ -239,6 +264,7 @@ exports.addProduct = async (req, res) => {
                                         name: req.body.name,
                                         description: req.body.description,
                                         price: req.body.price,
+                                        images: Images,
                                         packageCharges: req.body.packageCharges,
                                         gst: req.body.gst,
                                         cGst: req.body.cGst,
@@ -408,4 +434,69 @@ exports.deleteReview = async (req, res, next) => {
         const numOfReviews = reviews.length;
         let update = await Product.findByIdAndUpdate(req.params.productId, { reviews, ratings, numOfReviews, }, { new: true, runValidators: true, useFindAndModify: false, });
         res.status(200).json({ status: 200, data: update });
+};
+exports.addMoney = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user.id, });
+                if (data) {
+                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet + parseInt(req.body.balance) } }, { new: true });
+                        if (update) {
+                                let obj = {
+                                        user: req.user._id,
+                                        date: Date.now(),
+                                        amount: req.body.balance,
+                                        type: "Credit",
+                                };
+                                const data1 = await transaction.create(obj);
+                                if (data1) {
+                                        res.status(200).json({ status: "success", data: update });
+                                }
+
+                        }
+                } else {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+exports.removeMoney = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user.id, });
+                if (data) {
+                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet - parseInt(req.body.balance) } }, { new: true });
+                        if (update) {
+                                let obj = {
+                                        user: req.user._id,
+                                        date: Date.now(),
+                                        amount: req.body.balance,
+                                        type: "Debit",
+                                };
+                                const data1 = await transaction.create(obj);
+                                if (data1) {
+                                        res.status(200).json({ status: "success", data: update, });
+                                }
+
+                        }
+                } else {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+exports.getWallet = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user.id, });
+                if (data) {
+                        return res.status(200).json({ message: "get Profile", data: data.wallet });
+                } else {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ message: "server error.", data: {}, });
+        }
 };

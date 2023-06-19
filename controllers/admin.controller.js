@@ -4,6 +4,20 @@ const authConfig = require("../configs/auth.config");
 var newOTP = require("otp-generators");
 const User = require("../models/user.model");
 const Category = require("../models/CategoryModel");
+const helpandSupport = require('../models/helpAndSupport');
+const banner = require('../models/banner');
+const vendorDetails = require("../models/vendorDetails");
+const Product = require("../models/product.model");
+const Discount = require("../models/discount.model");
+const transaction = require('../models/transactionModel');
+const Wishlist = require("../models/WishlistModel");
+const Address = require("../models/AddressModel");
+const userCard = require("../models/userCard");
+const staticContent = require('../models/staticContent');
+const Faq = require("../models/faq.Model");
+const shiftPreference = require("../models/shiftPreference");
+const shiftTiming = require("../models/shiftTiming");
+
 exports.registration = async (req, res) => {
     const { phone, email } = req.body;
     try {
@@ -72,7 +86,7 @@ exports.update = async (req, res) => {
         });
     }
 };
-exports.createCategory = async (req, res, next) => {
+exports.createCategory = async (req, res) => {
     try {
         let findCategory = await Category.findOne({ name: req.body.name });
         if (findCategory) {
@@ -87,11 +101,11 @@ exports.createCategory = async (req, res, next) => {
         res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
     }
 };
-exports.getCategories = async (req, res, next) => {
+exports.getCategories = async (req, res) => {
     const categories = await Category.find({});
     res.status(201).json({ success: true, categories, });
 };
-exports.updateCategory = async (req, res, next) => {
+exports.updateCategory = async (req, res) => {
     const { id } = req.params;
     const category = await Category.findById(id);
     if (!category) {
@@ -101,7 +115,7 @@ exports.updateCategory = async (req, res, next) => {
     let update = await category.save();
     res.status(200).json({ message: "Updated Successfully", data: update });
 };
-exports.removeCategory = async (req, res, next) => {
+exports.removeCategory = async (req, res) => {
     const { id } = req.params;
     const category = await Category.findById(id);
     if (!category) {
@@ -109,5 +123,178 @@ exports.removeCategory = async (req, res, next) => {
     } else {
         await Category.findByIdAndDelete(category._id);
         res.status(200).json({ message: "Category Deleted Successfully !" });
+    }
+};
+exports.AddBanner = async (req, res) => {
+    try {
+        const category = await Category.findById(req.body.categoryId);
+        if (!category) {
+            res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
+        }
+        const data = { image: req.body.image, desc: req.body.desc, category: category._id }
+        const Data = await banner.create(data);
+        res.status(200).json({ status: 200, message: "Banner is Addded ", data: Data })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getBanner = async (req, res) => {
+    try {
+        const Banner = await banner.find();
+        if (Banner.length == 0) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        res.status(200).json({ status: 200, message: "All banner Data found successfully.", data: Banner })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getBannerById = async (req, res) => {
+    try {
+        const Banner = await banner.findById({ _id: req.params.id });
+        if (!Banner) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        res.status(200).json({ status: 200, message: "Data found successfully.", data: Banner })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.DeleteBanner = async (req, res) => {
+    try {
+        const Banner = await banner.findById({ _id: req.params.id });
+        if (!Banner) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        await banner.findByIdAndDelete({ _id: req.params.id });
+        res.status(200).json({ status: 200, message: "Banner delete successfully.", data: {} })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.DeleteHelpandSupport = async (req, res) => {
+    try {
+        const findHelp = await helpandSupport.findById({ _id: req.params.id });
+        if (!findHelp) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        } else {
+            await helpandSupport.findOneAndDelete({ user: req.params.id })
+            res.status(200).json({ status: 200, message: "Data delete successfully.", data: {} })
+        }
+    } catch (err) {
+        res.status(501).send({ status: 501, message: "server error.", data: {} });
+    }
+};
+exports.getAllHelpandSupport = async (req, res) => {
+    try {
+        const data = await helpandSupport.find();
+        if (data.length == 0) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        } else {
+            res.status(200).json({ status: 200, message: "Data found successfully.", data: data })
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {} });
+    }
+};
+exports.AddShiftPreference = async (req, res) => {
+    try {
+        const data = { toAmount: req.body.toAmount, fromAmount: req.body.fromAmount, hours: req.body.hours, salaryPer: req.body.salaryPer, dayType: req.body.dayType, type: req.body.type, }
+        const Data = await shiftPreference.create(data);
+        res.status(200).json({ status: 200, message: "ShiftPreference is Added ", data: Data })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getShiftPreference = async (req, res) => {
+    try {
+        const ShiftPreference = await shiftPreference.find();
+        if (ShiftPreference.length == 0) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        res.status(200).json({ status: 200, message: "All shiftPreference Data found successfully.", data: ShiftPreference })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getShiftPreferenceById = async (req, res) => {
+    try {
+        const ShiftPreference = await shiftPreference.findById({ _id: req.params.id });
+        if (!ShiftPreference) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        res.status(200).json({ status: 200, message: "Data found successfully.", data: ShiftPreference })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.DeleteShiftPreference = async (req, res) => {
+    try {
+        const ShiftPreference = await shiftPreference.findById({ _id: req.params.id });
+        if (!ShiftPreference) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        await shiftPreference.findByIdAndDelete({ _id: req.params.id });
+        res.status(200).json({ status: 200, message: "ShiftPreference delete successfully.", data: {} })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+
+
+exports.AddShiftTiming = async (req, res) => {
+    try {
+        const data = { to: req.body.to, from: req.body.from, type: req.body.type }
+        const Data = await shiftTiming.create(data);
+        res.status(200).json({ status: 200, message: "ShiftTiming is Added ", data: Data })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getShiftTiming = async (req, res) => {
+    try {
+        const ShiftTiming = await shiftTiming.find();
+        if (ShiftTiming.length == 0) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        res.status(200).json({ status: 200, message: "All shiftTiming Data found successfully.", data: ShiftTiming })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getShiftTimingById = async (req, res) => {
+    try {
+        const ShiftTiming = await shiftTiming.findById({ _id: req.params.id });
+        if (!ShiftTiming) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        res.status(200).json({ status: 200, message: "Data found successfully.", data: ShiftTiming })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.DeleteShiftTiming = async (req, res) => {
+    try {
+        const ShiftTiming = await shiftTiming.findById({ _id: req.params.id });
+        if (!ShiftTiming) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        await shiftTiming.findByIdAndDelete({ _id: req.params.id });
+        res.status(200).json({ status: 200, message: "ShiftTiming delete successfully.", data: {} })
+    } catch (err) {
+        console.log(err);
+        res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };

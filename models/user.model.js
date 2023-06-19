@@ -17,6 +17,9 @@ var userSchema = new schema(
         image: {
             type: String,
         },
+        gender: {
+            type: String,
+        },
         phone: {
             type: String,
         },
@@ -51,6 +54,14 @@ var userSchema = new schema(
         accountVerification: {
             type: Boolean,
             default: false,
+        },
+        shiftTiming: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "shiftTiming"
+        },
+        shiftPreference: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "shiftPreference"
         },
         userType: {
             type: String,

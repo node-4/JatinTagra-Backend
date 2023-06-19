@@ -27,4 +27,7 @@ module.exports = (app) => {
     app.get("/api/v1/Discount/allDiscount", [authJwt.verifyToken], auth.getDiscount);
     app.get("/api/v1/vendor/getProductReviews/:id", [authJwt.verifyToken], auth.getProductReviews);
     app.delete("/api/v1/vendor/deleteReview/:productId/:id", [authJwt.verifyToken], auth.deleteReview);
+    app.post('/api/v1/vendor/addWallet', [authJwt.verifyToken], auth.addMoney);
+    app.post('/api/v1/vendor/removeWallet', [authJwt.verifyToken], auth.removeMoney);
+    app.get('/api/v1/vendor/getwallet', [authJwt.verifyToken], auth.getWallet);
 };
