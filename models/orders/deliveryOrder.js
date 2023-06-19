@@ -5,10 +5,6 @@ const DocumentSchema = schema({
     type: schema.Types.ObjectId,
     ref: "user"
   },
-  vendorId: {
-    type: schema.Types.ObjectId,
-    ref: "user",
-  },
   driverId: {
     type: schema.Types.ObjectId,
     ref: "user",

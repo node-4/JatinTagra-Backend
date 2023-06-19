@@ -15,6 +15,9 @@ const Address = require("../models/AddressModel");
 const userCard = require("../models/userCard");
 const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
+const orderModel = require("../models/orders/orderModel");
+const userOrder = require("../models/orders/userOrder");
+const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 const cloudinary = require("cloudinary");
 cloudinary.config({
         cloud_name: "https-www-pilkhuwahandloom-com",
@@ -129,7 +132,7 @@ exports.loginWithPhone = async (req, res) => {
                 userObj.otp = newOTP.generate(4, { alphabets: false, upperCase: false, specialChar: false, });
                 userObj.otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
                 userObj.accountVerification = false;
-                const updated = await User.findOneAndUpdate({ phone: phone, userType: "VENDOR"  }, userObj, { new: true, });
+                const updated = await User.findOneAndUpdate({ phone: phone, userType: "VENDOR" }, userObj, { new: true, });
                 res.status(200).send({ userId: updated._id, otp: updated.otp });
         } catch (error) {
                 console.error(error);
@@ -498,5 +501,65 @@ exports.getWallet = async (req, res) => {
         } catch (error) {
                 console.log(error);
                 res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+exports.getOrders = async (req, res, next) => {
+        try {
+                const orders = await orderModel.find({ vendorId: req.user._id, orderStatus: "confirmed" }).populate('userId category productId discountId returnOrder');
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getcancelReturnOrder = async (req, res, next) => {
+        try {
+                const orders = await cancelReturnOrder.find({ vendorId: req.user._id }).populate('Orders');
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getOrderbyId = async (req, res, next) => {
+        try {
+                const orders = await orderModel.findById({ _id: req.params.id }).populate('vendorId userId category productId discountId');
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.allTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id }).populate("user orderId");
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
+        }
+};
+exports.allcreditTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id, type: "Credit" });
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
+        }
+};
+exports.allDebitTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id, type: "Debit" });
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
         }
 };

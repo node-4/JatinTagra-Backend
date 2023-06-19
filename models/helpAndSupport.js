@@ -17,5 +17,5 @@ const helpandSupport = mongoose.Schema({
         type: String
     }
 })
-const help = mongoose.model('help&suuport', helpandSupport);
+const help = mongoose.model('help&support', helpandSupport);
 module.exports = help

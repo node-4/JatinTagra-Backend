@@ -18,6 +18,7 @@ const Faq = require("../models/faq.Model");
 const Cart = require("../models/cartModel");
 const orderModel = require("../models/orders/orderModel");
 const userOrder = require("../models/orders/userOrder");
+const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 
 exports.getCart = async (req, res) => {
         try {
@@ -62,6 +63,8 @@ exports.addToCart = async (req, res) => {
                                                 productId: findProduct._id,
                                                 discountId: req.body.discountId,
                                                 productPrice: findProduct.price,
+                                                cGst: findProduct.cGst * req.body.quantity,
+                                                sGst: findProduct.sGst * req.body.quantity,
                                                 quantity: req.body.quantity,
                                                 discountPrice: findDiscount.discountPrice || 0,
                                                 total: total,
@@ -106,6 +109,8 @@ exports.addToCart = async (req, res) => {
                                                 productId: findProduct._id,
                                                 discountId: req.body.discountId,
                                                 productPrice: findProduct.price,
+                                                cGst: findProduct.cGst * req.body.quantity,
+                                                sGst: findProduct.sGst * req.body.quantity,
                                                 quantity: req.body.quantity,
                                                 discountPrice: findDiscount.discountPrice,
                                                 total: total,
@@ -160,6 +165,15 @@ exports.checkout = async (req, res) => {
                                                 discountPrice: findCart.products[i].discountPrice,
                                                 total: findCart.products[i].total,
                                                 paidAmount: findCart.products[i].paidAmount,
+                                                cGst: findCart.products[i].cGst,
+                                                sGst: findCart.products[i].sGst,
+                                                address: {
+                                                        street1: req.body.street1,
+                                                        street2: req.body.street2,
+                                                        city: req.body.city,
+                                                        state: req.body.state,
+                                                        country: req.body.country
+                                                },
                                         }
                                         const Data = await orderModel.create(obj);
                                         if (Data) {
@@ -209,6 +223,15 @@ exports.checkout = async (req, res) => {
                                                 discountPrice: findCart.products[i].discountPrice,
                                                 total: findCart.products[i].total,
                                                 paidAmount: findCart.products[i].paidAmount,
+                                                cGst: findCart.products[i].cGst,
+                                                sGst: findCart.products[i].sGst,
+                                                address: {
+                                                        street1: req.body.street1,
+                                                        street2: req.body.street2,
+                                                        city: req.body.city,
+                                                        state: req.body.state,
+                                                        country: req.body.country
+                                                },
                                         }
                                         const Data = await orderModel.create(obj);
                                         if (Data) {
@@ -268,6 +291,102 @@ exports.placeOrder = async (req, res) => {
                 }
         } catch (error) {
                 res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.cancelReturnOrder = async (req, res, next) => {
+        try {
+                const orders = await orderModel.findById({ _id: req.params.id });
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                } else {
+                        let obj = {
+                                userId: orders.userId,
+                                vendorId: orders.vendorId,
+                                Orders: orders._id,
+                                reason: req.body.reason,
+                                orderStatus: req.body.orderStatus,
+                        }
+                        const data = await cancelReturnOrder.create(obj);
+                        let update = await orderModel.findByIdAndUpdate({ _id: orders._id }, { $set: { returnOrder: data._id, returnStatus: req.body.orderStatus } }, { new: true }).populate('returnOrder');
+                        if (update) {
+                                res.status(200).json({ message: `Order ${req.body.orderStatus} Successfully.`, status: 200, data: update });
+                        }
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getAllOrders = async (req, res, next) => {
+        try {
+                const orders = await userOrder.find({ userId: req.user._id, orderStatus: "confirmed" }).populate('Orders');
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getOrders = async (req, res, next) => {
+        try {
+                const orders = await orderModel.find({ userId: req.user._id, orderStatus: "confirmed", returnStatus: "" });
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getcancelReturnOrder = async (req, res, next) => {
+        try {
+                const orders = await cancelReturnOrder.find({ userId: req.user._id }).populate('Orders');
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getOrderbyId = async (req, res, next) => {
+        try {
+                const orders = await orderModel.findById({ _id: req.params.id }).populate('vendorId userId category productId discountId returnOrder');
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.allTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id }).populate("user orderId");
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
+        }
+};
+exports.allcreditTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id, type: "Credit" });
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
+        }
+};
+exports.allDebitTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id, type: "Debit" });
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
         }
 };
 const reffralCode = async () => {

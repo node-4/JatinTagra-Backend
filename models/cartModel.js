@@ -25,6 +25,12 @@ const DocumentSchema = schema({
                 productPrice: {
                         type: Number
                 },
+                cGst: {
+                        type: Number,
+                },
+                sGst: {
+                        type: Number,
+                },
                 quantity: {
                         type: Number,
                         default: 1

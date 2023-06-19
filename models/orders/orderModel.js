@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema;
 const DocumentSchema = schema({
-  orderId:{
+  orderId: {
     type: String
   },
   userId: {
@@ -35,6 +35,12 @@ const DocumentSchema = schema({
     type: Number,
     default: 0
   },
+  cGst: {
+    type: Number,
+  },
+  sGst: {
+    type: Number,
+  },
   total: {
     type: Number,
     default: 0
@@ -43,10 +49,36 @@ const DocumentSchema = schema({
     type: Number,
     default: 0
   },
+  address: {
+    street1: {
+      type: String,
+    },
+    street2: {
+      type: String
+    },
+    city: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String
+    }
+  },
   orderStatus: {
     type: String,
     enum: ["unconfirmed", "confirmed"],
     default: "unconfirmed",
+  },
+  returnStatus: {
+    type: String,
+    enum: ["return", "cancel",""],
+    default: ""
+  },
+  returnOrder: {
+    type: schema.Types.ObjectId,
+    ref: "cancelReturnOrder",
   },
   paymentStatus: {
     type: String,

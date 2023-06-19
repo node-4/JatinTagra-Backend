@@ -30,4 +30,11 @@ module.exports = (app) => {
     app.post('/api/v1/vendor/addWallet', [authJwt.verifyToken], auth.addMoney);
     app.post('/api/v1/vendor/removeWallet', [authJwt.verifyToken], auth.removeMoney);
     app.get('/api/v1/vendor/getwallet', [authJwt.verifyToken], auth.getWallet);
+    app.get("/api/v1/vendor/allOrders", [authJwt.verifyToken], auth.getOrders);
+    app.get("/api/v1/vendor/getcancelReturnOrder", [authJwt.verifyToken], auth.getcancelReturnOrder);
+    app.get("/api/v1/vendor/viewOrder/:id", [authJwt.verifyToken], auth.getOrderbyId);
+    app.get("/api/v1/vendor/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
+    app.get("/api/v1/vendor/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
+    app.get("/api/v1/vendor/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
+
 };

@@ -330,7 +330,7 @@ exports.removeMoney = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user.id, });
                 if (data) {
-                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet - parseInt(req.body.balance) } }, { new: true });
+                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet - parseInt(req.body.balance) } }, { new: true });
                         if (update) {
                                 let obj = {
                                         user: req.user._id,
@@ -342,7 +342,6 @@ exports.removeMoney = async (req, res) => {
                                 if (data1) {
                                         res.status(200).json({ status: 200, message: "Money has been deducted.", data: update, });
                                 }
-
                         }
                 } else {
                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
