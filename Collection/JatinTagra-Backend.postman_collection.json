@@ -1,8 +1,10 @@
 {
 	"info": {
-		"_postman_id": "97728767-6dfd-4789-bf83-7f09b3f0e507",
+		"_postman_id": "9656e97e-8817-47eb-a0ac-33435e677c6b",
 		"name": "JatinTagra-Backend",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "23385795",
+		"_collection_link": "https://solar-trinity-26355.postman.co/workspace/flyweis~160f0fa9-ce3b-44b5-9e35-ff590823618d/collection/23385795-9656e97e-8817-47eb-a0ac-33435e677c6b?action=share&creator=23385795&source=collection_link"
 	},
 	"item": [
 		{
@@ -1045,7 +1047,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"otp\": \"3621\"\r\n}",
+									"raw": "{\r\n    \"otp\": \"0086\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1537,6 +1539,54 @@
 								"url": "localhost:8887/api/v1/vendor/getcancelReturnOrder"
 							},
 							"response": []
+						},
+						{
+							"name": "updateOrderStatus",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGZlMTc4MjMyMzIwNmVmMjViOWJiOSIsImlhdCI6MTY4NzI0ODgzNCwiZXhwIjoxNjg3NTA4MDM0fQ.3U8P9_hJ3ty-J_7JSP8kz3rh0wAUY59N37St9neEb3I"
+									}
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"preparingStatus\": \"\"\r\n}\r\n/// preparingStatus =====> \"Preparing\", \"Ready\", \"out_for_delivery\", \"delivered\"",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "localhost:8887/api/v1/vendor/updateOrderStatus/id"
+							},
+							"response": []
+						},
+						{
+							"name": "assignOrder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGQ2N2Y5NWE4ZDQzOTg2ZTE0NmYwNyIsImlhdCI6MTY4NzI2MjcxMCwiZXhwIjoxNjg3NTIxOTEwfQ.5cHg8abcXnRR7p5oCHjJUz3UXE5-B8oyS8IRHf63O8Y"
+									}
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": \"648ffae760162cf65d52604b\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "localhost:8887/api/v1/vendor/assignOrder/6490901c97c7909c4998ca85"
+							},
+							"response": []
 						}
 					]
 				},
@@ -1771,7 +1821,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"otp\": \"2080\"\r\n}",
+									"raw": "{\r\n    \"otp\": \"7614\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2033,6 +2083,50 @@
 								"method": "GET",
 								"header": [],
 								"url": "localhost:8887/api/v1/ShiftTiming/getShiftTimingById/id"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Order",
+					"item": [
+						{
+							"name": "allOrders",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGZmYWU3NjAxNjJjZjY1ZDUyNjA0YiIsImlhdCI6MTY4NzI2MzMyMSwiZXhwIjoxNjg3NTIyNTIxfQ.LgevXqRxFmPhFzmZ6n3xO2-ERV8hvdU2vZxwVCt5UeI"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "localhost:8887/api/v1/driver/allOrders"
+							},
+							"response": []
+						},
+						{
+							"name": "updateOrderStatus",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGZmYWU3NjAxNjJjZjY1ZDUyNjA0YiIsImlhdCI6MTY4NzI2MzMyMSwiZXhwIjoxNjg3NTIyNTIxfQ.LgevXqRxFmPhFzmZ6n3xO2-ERV8hvdU2vZxwVCt5UeI"
+									}
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"deliveryStatus\": \"\"\r\n}\r\n\r\n// deliveryStatus ==========> out_for_delivery , delivered",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "localhost:8887/api/v1/driver/updateOrderStatus/id"
 							},
 							"response": []
 						}
