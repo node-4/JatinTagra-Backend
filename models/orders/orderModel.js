@@ -88,11 +88,11 @@ const DocumentSchema = schema({
   preparingStatus: {
     type: String,
     enum: ["New", "Preparing", "Ready", "out_for_delivery", "delivered", ""],
-    default: ""
+    default: "New"
   },
   deliveryStatus: {
     type: String,
-    enum: ["signed", "out_for_delivery", "delivered", ""],
+    enum: ["assigned", "out_for_delivery", "delivered", ""],
     default: ""
   },
 }, { timestamps: true })

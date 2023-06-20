@@ -33,6 +33,8 @@ module.exports = (app) => {
     app.get("/api/v1/vendor/allOrders", [authJwt.verifyToken], auth.getOrders);
     app.get("/api/v1/vendor/getcancelReturnOrder", [authJwt.verifyToken], auth.getcancelReturnOrder);
     app.get("/api/v1/vendor/viewOrder/:id", [authJwt.verifyToken], auth.getOrderbyId);
+    app.put("/api/v1/vendor/updateOrderStatus/:id", [authJwt.verifyToken], auth.updateOrderStatus);
+    app.put("/api/v1/vendor/assignOrder/:id", [authJwt.verifyToken], auth.assignOrder);
     app.get("/api/v1/vendor/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
     app.get("/api/v1/vendor/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
     app.get("/api/v1/vendor/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);

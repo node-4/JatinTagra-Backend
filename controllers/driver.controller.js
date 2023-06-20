@@ -12,6 +12,8 @@ const Discount = require("../models/discount.model");
 const transaction = require('../models/transactionModel');
 const Address = require("../models/AddressModel");
 const bankDetails = require("../models/bankDetails");
+const deliveryOrder = require("../models/orders/deliveryOrder");
+const orderModel = require("../models/orders/orderModel");
 
 exports.signInWithPhone = async (req, res) => {
         try {
@@ -213,5 +215,36 @@ exports.updateDocument = async (req, res) => {
         } catch (error) {
                 console.error(error);
                 res.status(500).json({ message: "Server error", status: 500 });
+        }
+};
+exports.getOrders = async (req, res, next) => {
+        try {
+                const orders = await deliveryOrder.find({ driverId: req.user._id }).populate('Orders userId');
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.updateOrderStatus = async (req, res) => {
+        try {
+                const orders = await deliveryOrder.findById({ _id: req.params.id });
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                } else {
+                        const update = await deliveryOrder.findByIdAndUpdate({ _id: orders._id }, { $set: { deliveryStatus: req.body.deliveryStatus } }, { new: true });
+                        if (update) {
+                                const update1 = await orderModel.findByIdAndUpdate({ _id: update.Orders }, { $set: { deliveryStatus: req.body.deliveryStatus } }, { new: true })
+                                if (update1) {
+                                        return res.status(200).json({ status: 200, msg: "orders status changed.", data: update })
+                                }
+                        }
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };

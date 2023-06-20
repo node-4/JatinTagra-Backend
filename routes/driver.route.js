@@ -16,4 +16,6 @@ module.exports = (app) => {
     app.post("/api/v1/driver/completeRegistration/:id", auth.completeRegistration);
     app.post("/api/v1/driver/updateBankDetails/:id", auth.updateBankDetails);
     app.post("/api/v1/driver/updateDocument/:id", auth.updateDocument);
+    app.get("/api/v1/driver/allOrders", [authJwt.verifyToken], auth.getOrders);
+    app.put("/api/v1/driver/updateOrderStatus/:id", [authJwt.verifyToken], auth.updateOrderStatus);
 };

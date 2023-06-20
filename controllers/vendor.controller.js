@@ -17,6 +17,7 @@ const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
 const orderModel = require("../models/orders/orderModel");
 const userOrder = require("../models/orders/userOrder");
+const deliveryOrder = require("../models/orders/deliveryOrder");
 const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 const cloudinary = require("cloudinary");
 cloudinary.config({
@@ -234,6 +235,95 @@ exports.socialLogin = async (req, res) => {
                 return createResponse(res, 500, "Internal server error");
         }
 };
+exports.addMoney = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user.id, });
+                if (data) {
+                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet + parseInt(req.body.balance) } }, { new: true });
+                        if (update) {
+                                let obj = {
+                                        user: req.user._id,
+                                        date: Date.now(),
+                                        amount: req.body.balance,
+                                        type: "Credit",
+                                };
+                                const data1 = await transaction.create(obj);
+                                if (data1) {
+                                        res.status(200).json({ status: "success", data: update });
+                                }
+
+                        }
+                } else {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+exports.removeMoney = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user.id, });
+                if (data) {
+                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet - parseInt(req.body.balance) } }, { new: true });
+                        if (update) {
+                                let obj = {
+                                        user: req.user._id,
+                                        date: Date.now(),
+                                        amount: req.body.balance,
+                                        type: "Debit",
+                                };
+                                const data1 = await transaction.create(obj);
+                                if (data1) {
+                                        res.status(200).json({ status: "success", data: update, });
+                                }
+
+                        }
+                } else {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+exports.getWallet = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user.id, });
+                if (data) {
+                        return res.status(200).json({ message: "get Profile", data: data.wallet });
+                } else {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+exports.allTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id }).populate("user orderId");
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
+        }
+};
+exports.allcreditTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id, type: "Credit" });
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
+        }
+};
+exports.allDebitTransactionUser = async (req, res) => {
+        try {
+                const data = await transaction.find({ user: req.user._id, type: "Debit" });
+                res.status(200).json({ data: data });
+        } catch (err) {
+                res.status(400).json({ message: err.message });
+        }
+};
 exports.getCategories = async (req, res, next) => {
         const categories = await Category.find({});
         res.status(201).json({ success: true, categories, });
@@ -438,71 +528,6 @@ exports.deleteReview = async (req, res, next) => {
         let update = await Product.findByIdAndUpdate(req.params.productId, { reviews, ratings, numOfReviews, }, { new: true, runValidators: true, useFindAndModify: false, });
         res.status(200).json({ status: 200, data: update });
 };
-exports.addMoney = async (req, res) => {
-        try {
-                const data = await User.findOne({ _id: req.user.id, });
-                if (data) {
-                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet + parseInt(req.body.balance) } }, { new: true });
-                        if (update) {
-                                let obj = {
-                                        user: req.user._id,
-                                        date: Date.now(),
-                                        amount: req.body.balance,
-                                        type: "Credit",
-                                };
-                                const data1 = await transaction.create(obj);
-                                if (data1) {
-                                        res.status(200).json({ status: "success", data: update });
-                                }
-
-                        }
-                } else {
-                        return res.status(404).json({ message: "No data found", data: {} });
-                }
-        } catch (error) {
-                console.log(error);
-                res.status(501).send({ message: "server error.", data: {}, });
-        }
-};
-exports.removeMoney = async (req, res) => {
-        try {
-                const data = await User.findOne({ _id: req.user.id, });
-                if (data) {
-                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet - parseInt(req.body.balance) } }, { new: true });
-                        if (update) {
-                                let obj = {
-                                        user: req.user._id,
-                                        date: Date.now(),
-                                        amount: req.body.balance,
-                                        type: "Debit",
-                                };
-                                const data1 = await transaction.create(obj);
-                                if (data1) {
-                                        res.status(200).json({ status: "success", data: update, });
-                                }
-
-                        }
-                } else {
-                        return res.status(404).json({ message: "No data found", data: {} });
-                }
-        } catch (error) {
-                console.log(error);
-                res.status(501).send({ message: "server error.", data: {}, });
-        }
-};
-exports.getWallet = async (req, res) => {
-        try {
-                const data = await User.findOne({ _id: req.user.id, });
-                if (data) {
-                        return res.status(200).json({ message: "get Profile", data: data.wallet });
-                } else {
-                        return res.status(404).json({ message: "No data found", data: {} });
-                }
-        } catch (error) {
-                console.log(error);
-                res.status(501).send({ message: "server error.", data: {}, });
-        }
-};
 exports.getOrders = async (req, res, next) => {
         try {
                 const orders = await orderModel.find({ vendorId: req.user._id, orderStatus: "confirmed" }).populate('userId category productId discountId returnOrder');
@@ -539,27 +564,58 @@ exports.getOrderbyId = async (req, res, next) => {
                 res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
-exports.allTransactionUser = async (req, res) => {
+exports.updateOrderStatus = async (req, res) => {
         try {
-                const data = await transaction.find({ user: req.user._id }).populate("user orderId");
-                res.status(200).json({ data: data });
-        } catch (err) {
-                res.status(400).json({ message: err.message });
+                const orders = await orderModel.findById({ _id: req.params.id });
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                } else {
+                        const update = await orderModel.findByIdAndUpdate({ _id: orders._id }, { $set: { preparingStatus: req.body.preparingStatus } }, { new: true });
+                        return res.status(200).json({ status: 200, msg: "orders of user", data: update })
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
-exports.allcreditTransactionUser = async (req, res) => {
+exports.assignOrder = async (req, res) => {
         try {
-                const data = await transaction.find({ user: req.user._id, type: "Credit" });
-                res.status(200).json({ data: data });
-        } catch (err) {
-                res.status(400).json({ message: err.message });
-        }
-};
-exports.allDebitTransactionUser = async (req, res) => {
-        try {
-                const data = await transaction.find({ user: req.user._id, type: "Debit" });
-                res.status(200).json({ data: data });
-        } catch (err) {
-                res.status(400).json({ message: err.message });
+                const findOrders = await orderModel.findById({ _id: req.params.id });
+                if (!findOrders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                } else {
+                        let date = new Date(Date.now()).getDate();
+                        let month = new Date(Date.now()).getMonth() + 1;
+                        let year = new Date(Date.now()).getFullYear();
+                        let month1, date1;
+                        if (month < 10) { month1 = '' + 0 + month; } else { month1 = month }
+                        if (date < 10) { date1 = '' + 0 + date; } else { date1 = date }
+                        let fullDate = (`${year}-${month1}-${date1}`)
+                        let findDriver = await User.findById({ _id: req.body.userId });
+                        if (findDriver) {
+                                let findDeliveryOrder = await deliveryOrder.findOne({ userId: findOrders.userId, Orders: findOrders._id, driverId: findDriver._id, date: fullDate });
+                                if (findDeliveryOrder) {
+                                        return res.status(409).json({ status: 409, message: "Orders Already assign", data: findDeliveryOrder });
+                                } else {
+                                        let obj = {
+                                                userId: findOrders.userId,
+                                                driverId: findDriver._id,
+                                                date: fullDate,
+                                                Orders: findOrders._id,
+                                                deliveryStatus: "assigned",
+                                        }
+                                        const saveOrder = await deliveryOrder.create(obj);
+                                        if (saveOrder) {
+                                                const update = await orderModel.findByIdAndUpdate({ _id: findOrders._id }, { $set: { deliveryStatus: "assigned" } }, { new: true });
+                                                res.status(200).json({ message: "Order assign successfully.", status: 200, data: saveOrder });
+                                        }
+                                }
+                        } else {
+                                return res.status(404).json({ status: 404, message: "Driver not found", data: {} });
+                        }
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
