@@ -619,3 +619,74 @@ exports.assignOrder = async (req, res) => {
                 res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+exports.createOrder = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user.id, });
+                if (data) {
+                        const driver = await User.find({ userType: "DRIVER" });
+                        if (driver.length > 0) {
+                                let date = new Date(Date.now()).getDate();
+                                let month = new Date(Date.now()).getMonth() + 1;
+                                let year = new Date(Date.now()).getFullYear();
+                                let month1, date1;
+                                if (month < 10) { month1 = '' + 0 + month; } else { month1 = month }
+                                if (date < 10) { date1 = '' + 0 + date; } else { date1 = date }
+                                let fullDate = (`${year}-${month1}-${date1}`)
+                                let orderId = await reffralCode();
+                                if (req.body.cash == "Cash") {
+                                        req.body.paymentStatus = "pending"
+                                }
+                                if (req.body.cash == "Online") {
+                                        req.body.paymentStatus = "paid"
+                                }
+                                let obj = {
+                                        vendorId: data._id,
+                                        orderId: orderId,
+                                        userPhone: req.body.userPhone,
+                                        pickUpaddress: req.body.pickUpaddress,
+                                        pickUpInstruction: req.body.pickUpInstruction,
+                                        deliveryInstruction: req.body.deliveryInstruction,
+                                        courierWithBag: req.body.courierWithBag,
+                                        notificationRecipent: req.body.notificationRecipent,
+                                        parcelValue: req.body.parcelValue,
+                                        yourPhone: req.body.yourPhone,
+                                        vendorPhone: req.body.vendorPhone,
+                                        sending: req.body.sending,
+                                        orderType: "Package",
+                                        address: req.body.address,
+                                        paidAmount: req.body.paidAmount,
+                                        paymentStatus: req.body.paymentStatus
+                                }
+                                let saveOrder = await orderModel.create(obj);
+                                if (saveOrder) {
+                                        for (let i = 0; i < driver.length; i++) {
+                                                let obj = {
+                                                        driverId: driver[i]._id,
+                                                        date: fullDate,
+                                                        Orders: saveOrder._id,
+                                                        OrderStatus: "PENDING",
+                                                        orderType: "Package"
+                                                };
+                                                let saveOrders = await deliveryOrder.create(obj);
+                                        }
+                                        return res.status(200).json({ status: 200, message: "Order create successfully", data: saveOrder });
+                                }
+                        } else {
+                                return res.status(404).json({ message: "Driver data not found", data: {} });
+                        }
+                } else {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+const reffralCode = async () => {
+        var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let OTP = '';
+        for (let i = 0; i < 9; i++) {
+                OTP += digits[Math.floor(Math.random() * 36)];
+        }
+        return OTP;
+}

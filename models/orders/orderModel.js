@@ -66,6 +66,57 @@ const DocumentSchema = schema({
       type: String
     }
   },
+  userPhone: {
+    type: String,
+  },
+  pickUpaddress: {
+    street1: {
+      type: String,
+    },
+    street2: {
+      type: String
+    },
+    city: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String
+    }
+  },
+  pickUpInstruction: {
+    type: String,
+  },
+  deliveryInstruction: {
+    type: String,
+  },
+  courierWithBag: {
+    type: Boolean,
+    default: false
+  },
+  notificationRecipent: {
+    type: Boolean,
+    default: false
+  },
+  discountId: {
+    type: schema.Types.ObjectId,
+    ref: "discount"
+  },
+  parcelValue: {
+    type: Number,
+    default: 0
+  },
+  yourPhone: {
+    type: String,
+  },
+  vendorPhone: {
+    type: String,
+  },
+  sending: {
+    type: String,
+  },
   orderStatus: {
     type: String,
     enum: ["unconfirmed", "confirmed"],
@@ -73,7 +124,7 @@ const DocumentSchema = schema({
   },
   returnStatus: {
     type: String,
-    enum: ["return", "cancel",""],
+    enum: ["return", "cancel", ""],
     default: ""
   },
   returnOrder: {
@@ -84,6 +135,11 @@ const DocumentSchema = schema({
     type: String,
     enum: ["pending", "paid", "failed"],
     default: "pending"
+  },
+  orderType: {
+    type: String,
+    enum: ["Package", "Other"],
+    default: "Other"
   },
   preparingStatus: {
     type: String,

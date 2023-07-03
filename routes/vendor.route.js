@@ -38,5 +38,5 @@ module.exports = (app) => {
     app.get("/api/v1/vendor/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
     app.get("/api/v1/vendor/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
     app.get("/api/v1/vendor/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
-
+    app.post("/api/v1/vendor/createOrder", [authJwt.verifyToken], auth.createOrder);
 };

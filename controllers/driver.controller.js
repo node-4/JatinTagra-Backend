@@ -219,7 +219,19 @@ exports.updateDocument = async (req, res) => {
 };
 exports.getOrders = async (req, res, next) => {
         try {
-                const orders = await deliveryOrder.find({ driverId: req.user._id }).populate('Orders userId');
+                const orders = await deliveryOrder.find({ driverId: req.user._id, orderType: "Other" }).populate('Orders userId');
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getPackageOrders = async (req, res, next) => {
+        try {
+                const orders = await deliveryOrder.find({ driverId: req.user._id, orderType: "Package" }).populate('Orders userId');
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
