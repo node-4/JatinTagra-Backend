@@ -104,6 +104,26 @@ exports.getProfile = async (req, res) => {
                 res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+exports.updateProfile = async (req, res) => {
+        try {
+                let user = await User.findById({ _id: req.user._id });
+                if (!user) {
+                        res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                } else {
+                        let password;
+                        if (req.body.password != (null || undefined)) {
+                                password = bcrypt.hashSync(req.body.password, 8);
+                        }
+                        req.body.fullName = req.body.fullName || user.fullName;
+                        req.body.password = password || user.password;
+                        let update = await User.findByIdAndUpdate(user._id, { $set: req.body }, { new: true, });
+                        res.status(200).send({ message: "Data update successfully", status: 200, data: update });
+                }
+        } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: "Server error", status: 500 });
+        }
+};
 exports.resendOTP = async (req, res) => {
         const { id } = req.params;
         try {

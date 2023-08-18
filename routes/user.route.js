@@ -13,6 +13,7 @@ module.exports = (app) => {
     app.post("/api/v1/user/loginWithPhone", auth.loginWithPhone);
     app.post("/api/v1/user/:id", auth.verifyOtp);
     app.get("/api/v1/user/getProfile", [authJwt.verifyToken], auth.getProfile);
+    app.put("/api/v1/user/updateProfile", [authJwt.verifyToken], auth.updateProfile);
     app.post("/api/v1/user/resendOtp/:id", auth.resendOTP);
     app.post("/api/v1/user/resetPassword/:id", auth.resetPassword);
     app.post("/api/v1/user/socialLogin", auth.socialLogin);
