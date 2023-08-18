@@ -172,26 +172,64 @@ exports.getCategories = async (req, res, next) => {
 };
 exports.getProducts = async (req, res) => {
         try {
-                if (req.query.category) {
-                        const product = await Product.find({ category: req.query.category });
-                        if (product.length == 0) {
-                                return res.status(404).json({ status: 404, message: "No data found", data: {} });
-                        } else {
-                                res.status(200).json({ message: "Product data found.", status: 200, data: product });
-                        }
-                } else {
-                        const product = await Product.find({});
-                        if (product.length == 0) {
-                                return res.status(404).json({ status: 404, message: "No data found", data: {} });
-                        } else {
-                                res.status(200).json({ message: "Product data found.", status: 200, data: product });
-                        }
+                const { search, fromDate, toDate, category, page, limit } = req.query;
+                let query = {};
+                if (search) {
+                        query.$or = [
+                                { "name": { $regex: req.query.search, $options: "i" }, },
+                                { "description": { $regex: req.query.search, $options: "i" }, },
+                        ]
                 }
-        } catch (error) {
-                console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                if (category) {
+                        query.category = category
+                }
+                if (fromDate && !toDate) {
+                        query.createdAt = { $gte: fromDate };
+                }
+                if (!fromDate && toDate) {
+                        query.createdAt = { $lte: toDate };
+                }
+                if (fromDate && toDate) {
+                        query.$and = [
+                                { createdAt: { $gte: fromDate } },
+                                { createdAt: { $lte: toDate } },
+                        ]
+                }
+                let options = {
+                        page: Number(page) || 1,
+                        limit: Number(limit) || 15,
+                        sort: { createdAt: -1 },
+                        populate: ('category')
+                };
+                let data = await Product.paginate(query, options);
+                return res.status(200).json({ status: 200, message: "Product data found.", data: data });
+
+        } catch (err) {
+                return res.status(500).send({ msg: "internal server error ", error: err.message, });
         }
 };
+// exports.getProducts = async (req, res) => {
+//         try {
+//                 if (req.query.category) {
+//                         const product = await Product.find({ category: req.query.category });
+//                         if (product.length == 0) {
+//                                 return res.status(404).json({ status: 404, message: "No data found", data: {} });
+//                         } else {
+//                                 res.status(200).json({ message: "Product data found.", status: 200, data: product });
+//                         }
+//                 } else {
+//                         const product = await Product.find({});
+//                         if (product.length == 0) {
+//                                 return res.status(404).json({ status: 404, message: "No data found", data: {} });
+//                         } else {
+//                                 res.status(200).json({ message: "Product data found.", status: 200, data: product });
+//                         }
+//                 }
+//         } catch (error) {
+//                 console.log(error);
+//                 res.status(501).send({ status: 501, message: "server error.", data: {}, });
+//         }
+// };
 exports.getProduct = async (req, res) => {
         try {
                 const product = await Product.findById({ _id: req.params.id });

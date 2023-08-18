@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const { BlockList } = require("net");
-
+const mongoosePaginate = require("mongoose-paginate");
+const mongooseAggregatePaginate = require("mongoose-aggregate-paginate");
 const productSchema = mongoose.Schema({
         vendorId: {
                 type: mongoose.Schema.ObjectId,
@@ -80,4 +80,6 @@ const productSchema = mongoose.Schema({
         },
 });
 
+productSchema.plugin(mongoosePaginate);
+productSchema.plugin(mongooseAggregatePaginate);
 module.exports = mongoose.model("Product", productSchema);

@@ -92,7 +92,11 @@ exports.createCategory = async (req, res) => {
         if (findCategory) {
             res.status(409).json({ message: "category already exit.", status: 404, data: {} });
         } else {
-            const data = { name: req.body.name };
+            let image;
+            if (req.file) {
+                image = req.file.path
+            }
+            const data = { name: req.body.name, image: image };
             const category = await Category.create(data);
             res.status(200).json({ message: "category add successfully.", status: 200, data: category });
         }
@@ -111,7 +115,12 @@ exports.updateCategory = async (req, res) => {
     if (!category) {
         res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
     }
-    category.name = req.body.name;
+    let image;
+    if (req.file) {
+        image = req.file.path
+    }
+    category.name = req.body.name || category.name;
+    category.image = image || category.image;
     let update = await category.save();
     res.status(200).json({ message: "Updated Successfully", data: update });
 };
