@@ -507,7 +507,8 @@ exports.getAddressbyId = async (req, res, next) => {
                 console.log(error);
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
-}; s.AddQuery = async (req, res) => {
+};
+exports.AddQuery = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user.id, });
                 if (data) {
