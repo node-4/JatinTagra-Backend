@@ -424,7 +424,7 @@ exports.getWallet = async (req, res) => {
 };
 exports.createAddress = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         req.body.user = data._id;
                         const address = await Address.create(req.body);
@@ -434,12 +434,12 @@ exports.createAddress = async (req, res, next) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.getallAddress = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const allAddress = await Address.find({ user: data._id });
                         return res.status(200).json({ message: "Address data found.", data: allAddress });
@@ -448,12 +448,12 @@ exports.getallAddress = async (req, res, next) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.updateAddress = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const data1 = await Address.findById({ _id: req.params.id });
                         if (data1) {
@@ -468,17 +468,17 @@ exports.updateAddress = async (req, res, next) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.deleteAddress = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const data1 = await Address.findById({ _id: req.params.id });
                         if (data1) {
                                 let update = await Address.findByIdAndDelete(data1._id);
-                                res.status(200).json({ status: 200, message: "Address Deleted Successfully", });
+                                return res.status(200).json({ status: 200, message: "Address Deleted Successfully", });
                         } else {
                                 return res.status(404).json({ status: 404, message: "No data found", data: {} });
                         }
@@ -487,12 +487,12 @@ exports.deleteAddress = async (req, res, next) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.getAddressbyId = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const data1 = await Address.findById({ _id: req.params.id });
                         if (data1) {
@@ -505,10 +505,9 @@ exports.getAddressbyId = async (req, res, next) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
-};
-exports.AddQuery = async (req, res) => {
+}; s.AddQuery = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user.id, });
                 if (data) {
