@@ -4,6 +4,7 @@ const authConfig = require("../configs/auth.config");
 var newOTP = require("otp-generators");
 const User = require("../models/user.model");
 const Category = require("../models/CategoryModel");
+const subCategory = require("../models/subCategoryModel");
 const helpandSupport = require('../models/helpAndSupport');
 const banner = require('../models/banner');
 const vendorDetails = require("../models/vendorDetails");
@@ -338,26 +339,40 @@ exports.addProduct = async (req, res) => {
                         if (!findCategory) {
                                 return res.status(404).json({ message: "Category Not found", data: {} });
                         } else {
-                                let Images = [];
-                                if (req.body.images) {
-                                        for (let i = 0; i < req.body.images.length; i++) {
-                                                var result = await cloudinary.uploader.upload(req.body.images[i], { resource_type: "auto" });
+                                const findSubCategory = await subCategory.findById({ _id: req.body.subcategoryId, categoryId: findCategory._id });
+                                if (!findSubCategory) {
+                                        return res.status(404).json({ message: "Sub Category Not found", data: {} });
+                                }
+                                let Images = [], discountPrice;
+                                if (req.files) {
+                                        for (let i = 0; i < req.files.length; i++) {
                                                 let obj = {
-                                                        img: result.secure_url
+                                                        img: req.files[i].path
                                                 };
                                                 Images.push(obj)
-
                                         }
                                 }
-
+                                if (req.body.discountActive == "true") {
+                                        discountPrice = req.body.price - ((req.body.price * req.body.discount) / 100)
+                                } else {
+                                        discountPrice = 0;
+                                }
                                 let obj = {
                                         vendorId: data._id,
                                         category: findCategory._id,
-                                        vegNonVeg: req.body.vegNonVeg,
+                                        subcategory: findSubCategory._id,
                                         name: req.body.name,
-                                        description: req.body.description,
-                                        price: req.body.price,
                                         images: Images,
+                                        price: req.body.price,
+                                        discountPrice: discountPrice,
+                                        discountActive: req.body.discountActive,
+                                        discount: req.body.discount || 0,
+                                        quantity: req.body.quantity,
+                                        size: req.body.size,
+                                        description: req.body.description,
+                                        nutirient: req.body.nutirient,
+                                        storageTips: req.body.storageTips,
+                                        manufactureDetails: req.body.manufactureDetails,
                                         packageCharges: req.body.packageCharges,
                                         gst: req.body.gst,
                                         cGst: req.body.cGst,
@@ -425,25 +440,48 @@ exports.editProduct = async (req, res) => {
                 if (!product) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
-                        const findCategory = await Category.findById({ _id: req.body.category });
-                        if (!findCategory) {
-                                return res.status(404).json({ message: "Category Not found", data: {} });
-                        } else {
-                                let obj = {
-                                        vendorId: req.user.id,
-                                        category: findCategory._id,
-                                        vegNonVeg: req.body.vegNonVeg || product.vegNonVeg,
-                                        name: req.body.name || product.name,
-                                        description: req.body.description || product.description,
-                                        price: req.body.price || product.price,
-                                        packageCharges: req.body.packageCharges || product.packageCharges,
-                                        gst: req.body.gst || product.gst,
-                                        cGst: req.body.cGst || product.cGst,
-                                        sGst: req.body.sGst || product.sGst,
+                        let findCategory, findSubCategory;
+                        if (req.body.category != (null || undefined)) {
+                                findCategory = await Category.findById({ _id: req.body.category });
+                                if (!findCategory) {
+                                        return res.status(404).json({ message: "Category Not found", data: {} });
                                 }
-                                const update = await Product.findByIdAndUpdate({ _id: product._id }, { obj }, { new: true });
-                                res.status(200).json({ message: "Product update successfully.", status: 200, data: update });
                         }
+                        if (req.body.subcategoryId != (null || undefined)) {
+                                findSubCategory = await subCategory.findById({ _id: req.body.subcategoryId, categoryId: findCategory._id || product.category });
+                                if (!findSubCategory) {
+                                        return res.status(404).json({ message: "Sub Category Not found", data: {} });
+                                }
+                        }
+                        if (req.body.discountActive == "true") {
+                                discountPrice = req.body.price - ((req.body.price * req.body.discount) / 100)
+                        } else {
+                                discountPrice = 0;
+                        }
+                        let obj = {
+                                vendorId: data._id,
+                                category: findCategory._id || product.category,
+                                subcategory: findSubCategory._id || product.subcategory,
+                                name: req.body.name || product.name,
+                                images: Images || product.images,
+                                price: req.body.price || product.price,
+                                discountPrice: discountPrice || product.discountPrice,
+                                discountActive: req.body.discountActive || product.discountActive,
+                                discount: req.body.discount || 0 || product.discount,
+                                quantity: req.body.quantity || product.quantity,
+                                size: req.body.size || product.size,
+                                description: req.body.description || product.description,
+                                nutirient: req.body.nutirient || product.nutirient,
+                                storageTips: req.body.storageTips || product.storageTips,
+                                manufactureDetails: req.body.manufactureDetails || product.manufactureDetails,
+                                packageCharges: req.body.packageCharges || product.packageCharges,
+                                gst: req.body.gst || product.gst,
+                                cGst: req.body.cGst || product.cGst,
+                                sGst: req.body.sGst || product.sGst,
+                        }
+                        const update = await Product.findByIdAndUpdate({ _id: product._id }, { obj }, { new: true });
+                        res.status(200).json({ message: "Product update successfully.", status: 200, data: update });
+
                 }
         } catch (error) {
                 console.log(error);

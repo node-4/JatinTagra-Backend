@@ -10,27 +10,50 @@ const productSchema = mongoose.Schema({
                 type: mongoose.Schema.ObjectId,
                 ref: "Category",
         },
-        vegNonVeg: {
-                type: String,
-                enum: ["Veg", "NonVeg", "Egg"],
-        },
-        status: {
-                type: String,
-                enum: ["Approved", "Reject", "Pending"],
-                default: "Pending"
-        },
-        available: {
-                type: Boolean,
-                default: true
+        subcategory: {
+                type: mongoose.Schema.ObjectId,
+                ref: "subcategory",
         },
         name: {
+                type: String,
+        },
+        images: [{ img: { type: String } }],
+        price: {
+                type: Number,
+        },
+        discountPrice: {
+                type: Number,
+                default: 0
+        },
+        discount: {
+                type: Number,
+                default: 0
+        },
+        discountActive: {
+                type: Boolean,
+                default: false
+        },
+        quantity: {
+                type: String,
+        },
+        size: {
                 type: String,
         },
         description: {
                 type: String,
         },
-        price: {
-                type: Number,
+        nutirient: {
+                type: String,
+        },
+        storageTips: {
+                type: String,
+        },
+        manufactureDetails: {
+                type: String,
+        },
+        available: {
+                type: Boolean,
+                default: true
         },
         packageCharges: {
                 type: Number,
@@ -48,10 +71,18 @@ const productSchema = mongoose.Schema({
                 type: Number,
                 default: 0,
         },
-        images: [{ img: { type: String } }],
         Stock: {
                 type: Number,
                 default: 1,
+        },
+        vegNonVeg: {
+                type: String,
+                enum: ["Veg", "NonVeg", "Egg"],
+        },
+        status: {
+                type: String,
+                enum: ["Approved", "Reject", "Pending"],
+                default: "Pending"
         },
         numOfReviews: {
                 type: Number,

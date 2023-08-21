@@ -228,28 +228,6 @@ exports.getProducts = async (req, res) => {
                 return res.status(500).send({ msg: "internal server error ", error: err.message, });
         }
 };
-// exports.getProducts = async (req, res) => {
-//         try {
-//                 if (req.query.category) {
-//                         const product = await Product.find({ category: req.query.category });
-//                         if (product.length == 0) {
-//                                 return res.status(404).json({ status: 404, message: "No data found", data: {} });
-//                         } else {
-//                                 res.status(200).json({ message: "Product data found.", status: 200, data: product });
-//                         }
-//                 } else {
-//                         const product = await Product.find({});
-//                         if (product.length == 0) {
-//                                 return res.status(404).json({ status: 404, message: "No data found", data: {} });
-//                         } else {
-//                                 res.status(200).json({ message: "Product data found.", status: 200, data: product });
-//                         }
-//                 }
-//         } catch (error) {
-//                 console.log(error);
-//                 res.status(501).send({ status: 501, message: "server error.", data: {}, });
-//         }
-// };
 exports.getProduct = async (req, res) => {
         try {
                 const product = await Product.findById({ _id: req.params.id });

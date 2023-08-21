@@ -4,6 +4,7 @@ const authConfig = require("../configs/auth.config");
 var newOTP = require("otp-generators");
 const User = require("../models/user.model");
 const Category = require("../models/CategoryModel");
+const subCategory = require("../models/subCategoryModel");
 const helpandSupport = require('../models/helpAndSupport');
 const banner = require('../models/banner');
 const vendorDetails = require("../models/vendorDetails");
@@ -134,6 +135,160 @@ exports.removeCategory = async (req, res) => {
         res.status(200).json({ message: "Category Deleted Successfully !" });
     }
 };
+exports.createSubCategory = async (req, res) => {
+    try {
+        const data = await Category.findById(req.body.categoryId);
+        if (!data || data.length === 0) {
+            return res.status(400).send({ status: 404, msg: "not found" });
+        }
+        let image;
+        if (req.file) {
+            image = req.file.path
+        }
+        const subcategoryCreated = await subCategory.create({ name: req.body.name, image: image, categoryId: data._id });
+        return res.status(201).send({ status: 200, message: "Sub Category add successfully", data: subcategoryCreated, });
+    } catch (err) {
+        return res.status(500).send({ message: "Internal server error while creating sub category", });
+    }
+};
+exports.getSubCategoryForAdmin = async (req, res) => {
+    try {
+        const data = await subCategory.find({}).populate('categoryId');
+        if (data.length > 0) {
+            return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
+        } else {
+            return res.status(404).json({ status: 404, message: "Sub Category data not found.", data: {} });
+        }
+    } catch (err) {
+        return res.status(500).send({ msg: "internal server error ", error: err.message, });
+    }
+};
+exports.paginateSubCategoriesSearch = async (req, res) => {
+    try {
+        console.log("------------------------");
+        const { search, fromDate, toDate, page, limit } = req.query;
+        let query = {};
+        if (search) {
+            query.$or = [
+                { "name": { $regex: req.query.search, $options: "i" }, },
+            ]
+        }
+        if ((fromDate != 'null') && (toDate == 'null')) {
+            query.createdAt = { $gte: fromDate };
+        }
+        if ((fromDate == 'null') && (toDate != 'null')) {
+            query.createdAt = { $lte: toDate };
+        }
+        if ((fromDate != 'null') && (toDate != 'null')) {
+            query.$and = [
+                { createdAt: { $gte: fromDate } },
+                { createdAt: { $lte: toDate } },
+            ]
+        }
+        let options = {
+            page: Number(page) || 1,
+            limit: Number(limit) || 10,
+            sort: { createdAt: -1 },
+            populate: ('categoryId')
+        };
+        let data = await subCategory.paginate(query, options);
+        return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
+
+    } catch (err) {
+        return res.status(500).send({ msg: "internal server error ", error: err.message, });
+    }
+};
+exports.getSubCategory = async (req, res) => {
+    try {
+        const categories = await Category.find({});
+        if (categories.length == 0) {
+            return res.status(404).json({ message: "Data not found.", status: 404, data: {} });
+        } else {
+            let Array = []
+            for (let i = 0; i < categories.length; i++) {
+                const data = await subCategory.find({ categoryId: categories[i]._id });
+                let obj = {
+                    category: categories[i],
+                    subCategory: data
+                }
+                Array.push(obj)
+            }
+            return res.status(200).json({ status: 200, message: "Sub Category data found.", data: Array });
+        }
+    } catch (err) {
+        return res.status(500).send({ msg: "internal server error ", error: err.message, });
+    }
+};
+exports.getIdSubCategory = async (req, res) => {
+    try {
+        const data = await subCategory.findById(req.params.id);
+        if (!data || data.length === 0) {
+            return res.status(400).send({ msg: "not found" });
+        }
+        return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
+    } catch (err) {
+        return res.status(500).send({ msg: "internal server error ", error: err.message, });
+    }
+};
+exports.updateSubCategory = async (req, res) => {
+    try {
+        let id = req.params.id
+        const findSubCategory = await subCategory.findById(id);
+        if (!findSubCategory) {
+            return res.status(404).json({ status: 404, message: "Sub Category Not Found", data: {} });
+        }
+        let findCategory;
+        if (req.body.categoryId != "null") {
+            findCategory = await Category.findById({ _id: req.body.categoryId });
+            if (!findCategory || findCategory.length === 0) {
+                return res.status(400).send({ status: 404, msg: "Category not found" });
+            }
+        }
+        let image;
+        if (req.file) {
+            image = req.file.path
+        }
+        req.body.image = image || findSubCategory.image;
+        req.body.categoryId = findCategory._id || findSubCategory.categoryId;
+        req.body.name = req.body.name || findSubCategory.name;
+        const data = await subCategory.findByIdAndUpdate(findSubCategory._id, req.body, { new: true });
+        if (data) {
+            return res.status(200).send({ status: 200, msg: "updated", data: data });
+        }
+    } catch (err) {
+        console.log(err.message);
+        return res.status(500).send({
+            msg: "internal server error ",
+            error: err.message,
+        });
+    }
+};
+exports.deleteSubCategory = async (req, res) => {
+    try {
+        const data = await subCategory.findByIdAndDelete(req.params.id);
+        if (!data) {
+            return res.status(400).send({ msg: "not found" });
+        }
+        return res.status(200).send({ msg: "deleted", data: data });
+    } catch (err) {
+        console.log(err.message);
+        return res.status(500).send({
+            msg: "internal server error",
+            error: err.message,
+        });
+    }
+};
+exports.getSubCategoryByCategoryId = async (req, res) => {
+    try {
+        const data = await subCategory.find({ categoryId: req.params.categoryId }).populate('categoryId');
+        if (!data || data.length === 0) {
+            return res.status(400).send({ msg: "not found" });
+        }
+        return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
+    } catch (err) {
+        return res.status(500).send({ msg: "internal server error ", error: err.message, });
+    }
+};
 exports.AddBanner = async (req, res) => {
     try {
         const category = await Category.findById(req.body.categoryId);
@@ -258,8 +413,6 @@ exports.DeleteShiftPreference = async (req, res) => {
         res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
-
-
 exports.AddShiftTiming = async (req, res) => {
     try {
         const data = { to: req.body.to, from: req.body.from, type: req.body.type }

@@ -1,7 +1,7 @@
 const { validateUser } = require("../middlewares");
 const auth = require("../controllers/admin.controller");
 const { authJwt, authorizeRoles } = require("../middlewares");
-const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload } = require('../middlewares/imageUpload')
+const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload } = require('../middlewares/imageUpload')
 module.exports = (app) => {
     app.post("/api/v1/admin/registration", auth.registration);
     app.post("/api/v1/admin/login", auth.signin);
@@ -10,6 +10,14 @@ module.exports = (app) => {
     app.get("/api/v1/Category/allCategory", auth.getCategories);
     app.put("/api/v1/Category/updateCategory/:id", [authJwt.verifyToken], categoryUpload.single('image'), auth.updateCategory);
     app.delete("/api/v1/Category/deleteCategory/:id", [authJwt.verifyToken], auth.removeCategory);
+    app.post("/api/v1/SubCategory/addSubcategory", [authJwt.verifyToken], subCategoryUpload.single('image'), auth.createSubCategory);
+    app.get("/api/v1/SubCategory/:id", auth.getIdSubCategory);
+    app.put("/api/v1/SubCategory/updateSubcategory/:id", [authJwt.verifyToken], subCategoryUpload.single('image'), auth.updateSubCategory);
+    app.delete("/api/v1/SubCategory/deleteSubcategory/:id", [authJwt.verifyToken], auth.deleteSubCategory);
+    app.get("/api/v1/SubCategory/all/Subcategory", auth.getSubCategory);
+    app.get("/api/v1/SubCategory/all/SubCategoryForAdmin", auth.getSubCategoryForAdmin);
+    app.get("/api/v1/SubCategory/paginate/SubCategoriesSearch", auth.paginateSubCategoriesSearch);
+    app.get("/api/v1/SubCategory/allSubcategoryById/:categoryId", auth.getSubCategoryByCategoryId);
     app.get('/api/v1/admin/help/getAllQuery', [authJwt.verifyToken], auth.getAllHelpandSupport);
     app.delete('/api/v1/admin/help/delete/:id', [authJwt.verifyToken], auth.DeleteHelpandSupport);
     app.post("/api/v1/Banner/AddBanner", [authJwt.verifyToken], auth.AddBanner);

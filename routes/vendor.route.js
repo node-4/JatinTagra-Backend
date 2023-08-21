@@ -1,12 +1,7 @@
 const { validateUser } = require("../middlewares");
 const auth = require("../controllers/vendor.controller");
 const { authJwt, authorizeRoles } = require("../middlewares");
-var multer = require("multer");
-const path = require("path");
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => { cb(null, "uploads"); }, filename: (req, file, cb) => { cb(null, Date.now() + path.extname(file.originalname)); },
-});
-const upload = multer({ storage: storage });
+const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload } = require('../middlewares/imageUpload')
 module.exports = (app) => {
     app.post("/api/v1/vendor/registration", auth.registration);
     app.put("/api/v1/vendor/completeRegistration/:id", auth.completeRegistration);
@@ -18,10 +13,10 @@ module.exports = (app) => {
     app.post("/api/v1/vendor/resetPassword/:id", auth.resetPassword);
     app.post("/api/v1/vendor/socialLogin", auth.socialLogin);
     app.get("/api/v1/vendor/getCategory", auth.getCategories);
-    app.post("/api/v1/product/addProduct", [authJwt.verifyToken], auth.addProduct);
+    app.post("/api/v1/product/addProduct", [authJwt.verifyToken], upload.array('image'), auth.addProduct);
     app.get("/api/v1/product/allProducts", [authJwt.verifyToken], auth.getProducts);
     app.get("/api/v1/product/viewProduct/:id", auth.getProduct);
-    app.put("/api/v1/product/editProduct/:id", [authJwt.verifyToken], auth.editProduct);
+    app.put("/api/v1/product/editProduct/:id", [authJwt.verifyToken], upload.array('image'), auth.editProduct);
     app.delete("/api/v1/product/deleteProduct/:id", [authJwt.verifyToken], auth.deleteProduct);
     app.post("/api/v1/Discount/addDiscount", [authJwt.verifyToken], auth.addDiscount);
     app.get("/api/v1/Discount/allDiscount", [authJwt.verifyToken], auth.getDiscount);
