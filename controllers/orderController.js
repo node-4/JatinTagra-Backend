@@ -22,7 +22,7 @@ const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 
 exports.getCart = async (req, res) => {
         try {
-                let userData = await User.findOne({ _id: req.user.id, userType: "USER" });
+                let userData = await User.findOne({ _id: req.user._id, userType: "USER" });
                 if (!userData) {
                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
                 } else {
@@ -44,7 +44,7 @@ exports.getCart = async (req, res) => {
 };
 exports.addToCart = async (req, res) => {
         try {
-                let userData = await User.findOne({ _id: req.user.id, userType: "USER" });
+                let userData = await User.findOne({ _id: req.user._id, userType: "USER" });
                 if (!userData) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
@@ -377,7 +377,7 @@ exports.addAdressToCart = async (req, res) => {
 };
 exports.checkout = async (req, res) => {
         try {
-                let findOrder = await orderModel.find({ user: req.user.id, orderStatus: "unconfirmed" });
+                let findOrder = await orderModel.find({ user: req.user._id, orderStatus: "unconfirmed" });
                 if (findOrder.length > 0) {
                         for (let i = 0; i < findOrder.length; i++) {
                                 await userOrder.findOneAndDelete({ orderId: findOrder[i].orderId });
@@ -447,7 +447,7 @@ exports.checkout = async (req, res) => {
                                 res.status(200).json({ status: 200, message: "Order create successfully. ", data: findUserOrder })
                         }
                 } else {
-                        let findCart = await Cart.findOne({ userId: req.user.id });
+                        let findCart = await Cart.findOne({ userId: req.user._id });
                         if (findCart) {
                                 let orderId = await reffralCode();
                                 for (let i = 0; i < findCart.products.length; i++) {

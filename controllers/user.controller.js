@@ -93,7 +93,7 @@ exports.verifyOtp = async (req, res) => {
 };
 exports.getProfile = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         return res.status(200).json({ status: 200, message: "get Profile", data: data });
                 } else {
@@ -243,9 +243,9 @@ exports.getProduct = async (req, res) => {
 exports.createWishlist = async (req, res, next) => {
         try {
                 const product = req.params.id;
-                let wishList = await Wishlist.findOne({ user: req.user.id });
+                let wishList = await Wishlist.findOne({ user: req.user._id });
                 if (!wishList) {
-                        wishList = new Wishlist({ user: req.user.id, });
+                        wishList = new Wishlist({ user: req.user._id, });
                 }
                 wishList.products.addToSet(product);
                 await wishList.save();
@@ -284,7 +284,7 @@ exports.myWishlist = async (req, res, next) => {
 };
 exports.createProductReview = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (!data) {
                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
                 } else {
@@ -389,7 +389,7 @@ exports.removeMoney = async (req, res) => {
 };
 exports.getWallet = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         return res.status(200).json({ message: "get Profile", data: data.wallet });
                 } else {
@@ -488,7 +488,7 @@ exports.getAddressbyId = async (req, res, next) => {
 };
 exports.AddQuery = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const data = {
                                 user: data._id,
@@ -509,7 +509,7 @@ exports.AddQuery = async (req, res) => {
 };
 exports.getAllQuery = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const Data = await helpandSupport.find({ user: req.user._id });
                         if (data.length == 0) {
@@ -527,7 +527,7 @@ exports.getAllQuery = async (req, res) => {
 };
 exports.createPaymentCard = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const saveData = {
                                 user: req.user._id,
@@ -550,7 +550,7 @@ exports.createPaymentCard = async (req, res, next) => {
 };
 exports.getPaymentCard = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const getData = await userCard.find({ user: req.user._id });
                         res.status(200).json({ status: 200, message: "Card details fetch.", data: getData })
@@ -564,7 +564,7 @@ exports.getPaymentCard = async (req, res, next) => {
 };
 exports.updatePaymentCard = async (req, res, next) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const payment = await userCard.findById(req.params.id);
                         if (!payment) {
