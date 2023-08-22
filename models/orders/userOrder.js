@@ -13,21 +13,19 @@ const DocumentSchema = schema({
     ref: "Order",
   }],
   address: {
-    street1: {
+    houseFlat: {
       type: String,
     },
-    street2: {
-      type: String
-    },
-    city: {
+    appartment: {
       type: String,
     },
-    state: {
+    landMark: {
       type: String,
     },
-    country: {
-      type: String
-    }
+    houseType: {
+      type: String,
+      enum: ["home", "office", "Other"],
+    },
   },
   discountPrice: {
     type: Number,

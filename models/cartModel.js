@@ -25,6 +25,9 @@ const DocumentSchema = schema({
                 productPrice: {
                         type: Number
                 },
+                gst: {
+                        type: Number,
+                },
                 cGst: {
                         type: Number,
                 },
@@ -35,7 +38,7 @@ const DocumentSchema = schema({
                         type: Number,
                         default: 1
                 },
-                discountPrice: {
+                discount: {
                         type: Number,
                         default: 0
                 },
@@ -44,11 +47,32 @@ const DocumentSchema = schema({
                         default: 0
                 },
         }],
+        houseFlat: {
+                type: String,
+        },
+        appartment: {
+                type: String,
+        },
+        landMark: {
+                type: String,
+        },
+        houseType: {
+                type: String,
+                enum: ["home", "office", "Other"],
+        },
         totalAmount: {
                 type: Number,
                 default: 0
         },
-        discountPrice: {
+        discount: {
+                type: Number,
+                default: 0
+        },
+        shipping: {
+                type: Number,
+                default: 0
+        },
+        tax: {
                 type: Number,
                 default: 0
         },

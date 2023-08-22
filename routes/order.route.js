@@ -3,6 +3,10 @@ const { authJwt, authorizeRoles } = require("../middlewares");
 module.exports = (app) => {
     app.get("/api/v1/order/getCart", [authJwt.verifyToken], auth.getCart);
     app.post("/api/v1/order/addToCart", [authJwt.verifyToken], auth.addToCart);
+    app.put("/api/v1/order/addAdressToCart/:id", [authJwt.verifyToken], auth.addAdressToCart);
+    app.put("/api/v1/order/updateQuantity", [authJwt.verifyToken], auth.updateQuantity);
+    app.put("/api/v1/order/deleteProductfromCart/:cartProductId", [authJwt.verifyToken], auth.deleteProductfromCart);
+    app.delete("/api/v1/order/deleteCart", [authJwt.verifyToken], auth.deleteCart);
     app.post("/api/v1/order/checkout", [authJwt.verifyToken], auth.checkout);
     app.post("/api/v1/order/placeOrder/:orderId", [authJwt.verifyToken], auth.placeOrder);
     app.get("/api/v1/order/allOrders", [authJwt.verifyToken], auth.getAllOrders);

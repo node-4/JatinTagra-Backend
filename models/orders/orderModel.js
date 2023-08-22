@@ -35,6 +35,9 @@ const DocumentSchema = schema({
     type: Number,
     default: 0
   },
+  gst: {
+    type: Number,
+  },
   cGst: {
     type: Number,
   },
@@ -50,41 +53,37 @@ const DocumentSchema = schema({
     default: 0
   },
   address: {
-    street1: {
+    houseFlat: {
       type: String,
     },
-    street2: {
-      type: String
-    },
-    city: {
+    appartment: {
       type: String,
     },
-    state: {
+    landMark: {
       type: String,
     },
-    country: {
-      type: String
-    }
+    houseType: {
+      type: String,
+      enum: ["home", "office", "Other"],
+    },
   },
   userPhone: {
     type: String,
   },
   pickUpaddress: {
-    street1: {
+    houseFlat: {
       type: String,
     },
-    street2: {
-      type: String
-    },
-    city: {
+    appartment: {
       type: String,
     },
-    state: {
+    landMark: {
       type: String,
     },
-    country: {
-      type: String
-    }
+    houseType: {
+      type: String,
+      enum: ["home", "office", "Other"],
+    },
   },
   pickUpInstruction: {
     type: String,
