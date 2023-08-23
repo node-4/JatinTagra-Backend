@@ -415,7 +415,6 @@ exports.checkout = async (req, res) => {
                                                 },
                                         }
                                         console.log(obj);
-                                        return;
                                         const Data = await orderModel.create(obj);
                                         if (Data) {
                                                 let findUserOrder = await userOrder.findOne({ orderId: orderId });
