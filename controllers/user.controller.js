@@ -490,14 +490,14 @@ exports.AddQuery = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
-                        const data = {
+                        const data1 = {
                                 user: data._id,
                                 name: req.body.name,
                                 email: req.body.email,
                                 mobile: req.body.mobile,
                                 query: req.body.query
                         }
-                        const Data = await helpandSupport.create(data);
+                        const Data = await helpandSupport.create(data1);
                         res.status(200).json({ status: 200, message: "Send successfully.", data: Data })
                 } else {
                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
