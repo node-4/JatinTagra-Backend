@@ -578,7 +578,7 @@ exports.updatePaymentCard = async (req, res, next) => {
                                         cvv: req.body.cvv || payment.cvv,
                                         cardType: req.body.cardType || payment.cardType,
                                 }
-                                let saved = await payment.findByIdAndUpdate(payment._id, { obj }, { new: true });
+                                let saved = await userCard.findByIdAndUpdate(payment._id, { obj }, { new: true });
                                 res.status(200).json({ status: 200, message: "Card details Updated Successfully.", data: saved })
                         }
                 } else {

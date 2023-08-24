@@ -27,9 +27,9 @@ module.exports = (app) => {
     app.get("/api/v1/product/getProductReviews/:id", [authJwt.verifyToken], auth.getProductReviews);
     app.post('/api/v1/user/help/addQuery', [authJwt.verifyToken], auth.AddQuery);
     app.get('/api/v1/user/help/getAllQuery', [authJwt.verifyToken], auth.getAllQuery);
-    app.post('/api/v1/user/addWallet', [authJwt.verifyToken], auth.addMoney);
-    app.post('/api/v1/user/removeWallet', [authJwt.verifyToken], auth.removeMoney);
-    app.get('/api/v1/user/getwallet', [authJwt.verifyToken], auth.getWallet);
+    app.post('/api/v1/wallet/addWallet', [authJwt.verifyToken], auth.addMoney);
+    app.post('/api/v1/wallet/removeWallet', [authJwt.verifyToken], auth.removeMoney);
+    app.get('/api/v1/wallet/getwallet', [authJwt.verifyToken], auth.getWallet);
     app.post("/api/v1/user/address/new", [authJwt.verifyToken], auth.createAddress);
     app.get("/api/v1/user/getAddress", [authJwt.verifyToken], auth.getallAddress);
     app.put("/api/v1/user/address/:id", [authJwt.verifyToken], auth.updateAddress)
