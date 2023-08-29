@@ -18,7 +18,7 @@ const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
 const shiftPreference = require("../models/shiftPreference");
 const shiftTiming = require("../models/shiftTiming");
-
+const subscription = require('../models/subscription')
 exports.registration = async (req, res) => {
     const { phone, email } = req.body;
     try {
@@ -458,5 +458,28 @@ exports.DeleteShiftTiming = async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+
+exports.createSubscription = async (req, res) => {
+    try {
+        let findSubscription = await subscription.findOne({ name: req.body.name });
+        if (findSubscription) {
+            res.json({ status: 409, message: 'subscription already created.', data: {} });
+        } else {
+            req.body.totalAmount = req.body.month * req.body.price;
+            const newsubscription = await subscription.create(req.body);
+            res.json({ status: 200, message: 'subscription create successfully', data: newsubscription });
+        }
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+};
+exports.getSubscription = async (req, res) => {
+    try {
+        const findSubscription = await subscription.find();
+        return res.status(200).json({ status: 200, message: "Subscription detail successfully.", data: findSubscription });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
     }
 };

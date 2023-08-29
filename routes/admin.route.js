@@ -32,4 +32,6 @@ module.exports = (app) => {
     app.get("/api/v1/ShiftTiming/allShiftTiming", auth.getShiftTiming);
     app.get("/api/v1/ShiftTiming/getShiftTimingById/:id", auth.getShiftTimingById);
     app.delete("/api/v1/ShiftTiming/deleteShiftTiming/:id", [authJwt.verifyToken], auth.DeleteShiftTiming);
+    app.post('/api/v1/subscription/createSubscription', auth.createSubscription);
+    app.get('/api/v1/subscription/getSubscription', auth.getSubscription);
 };
