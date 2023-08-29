@@ -518,6 +518,14 @@ exports.placeOrder = async (req, res) => {
                                         for (let i = 0; i < update.Orders.length; i++) {
                                                 let update = await orderModel.findByIdAndUpdate({ _id: update.Orders[i]._id }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
                                         }
+                                        let obj = {
+                                                user: req.user._id,
+                                                orderId: findUserOrder._id,
+                                                date: Date.now(),
+                                                amount: findUserOrder.paidAmount,
+                                                type: "Debit",
+                                        };
+                                        const data1 = await transaction.create(obj);
                                         res.status(200).json({ message: "Payment success.", status: 200, data: update });
                                 }
                         }
