@@ -315,7 +315,6 @@ exports.createProductReview = async (req, res, next) => {
                                         product.reviews.push(review);
                                         product.numOfReviews = product.reviews.length;
                                 }
-
                         }
                         let avg = 0;
                         product.reviews.forEach((rev) => { avg += rev.rating; });
@@ -597,6 +596,19 @@ exports.DeletePaymentCard = async (req, res, next) => {
                 } else {
                         const data = await userCard.findByIdAndDelete({ _id: payment._id, });
                         res.status(200).json({ status: 200, message: "Card details Delete Successfully.", data: {} })
+                }
+        } catch (err) {
+                console.log(err);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getAllVendor = async (req, res) => {
+        try {
+                const Data = await User.find({ userType: "VENDOR" });
+                if (Data.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Vendor data not found", data: {} });
+                } else {
+                        res.status(200).json({ status: 200, message: "Data found successfully.", data: Data })
                 }
         } catch (err) {
                 console.log(err);
