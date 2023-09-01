@@ -34,4 +34,6 @@ module.exports = (app) => {
     app.delete("/api/v1/ShiftTiming/deleteShiftTiming/:id", [authJwt.verifyToken], auth.DeleteShiftTiming);
     app.post('/api/v1/subscription/createSubscription', auth.createSubscription);
     app.get('/api/v1/subscription/getSubscription', auth.getSubscription);
+    app.post("/api/v1/admin/addContactDetails", [authJwt.verifyToken], auth.addContactDetails);
+    app.get("/api/v1/admin/viewContactDetails", auth.viewContactDetails);
 };

@@ -18,6 +18,7 @@ const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
 const shiftPreference = require("../models/shiftPreference");
 const shiftTiming = require("../models/shiftTiming");
+const ContactDetail = require("../models/ContactDetail");
 const subscription = require('../models/subscription')
 exports.registration = async (req, res) => {
     const { phone, email } = req.body;
@@ -460,7 +461,6 @@ exports.DeleteShiftTiming = async (req, res) => {
         res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
-
 exports.createSubscription = async (req, res) => {
     try {
         let findSubscription = await subscription.findOne({ name: req.body.name });
@@ -481,5 +481,43 @@ exports.getSubscription = async (req, res) => {
         return res.status(200).json({ status: 200, message: "Subscription detail successfully.", data: findSubscription });
     } catch (err) {
         return res.status(500).json({ message: err.message });
+    }
+};
+exports.addContactDetails = async (req, res) => {
+    try {
+        let findContact = await ContactDetail.findOne();
+        if (findContact) {
+            req.body.mobileNumber = req.body.mobileNumber || findContact.mobileNumber;
+            req.body.mobileNumberDescription = req.body.mobileNumberDescription || findContact.mobileNumberDescription;
+            req.body.email = req.body.email || findContact.email;
+            req.body.emailDescription = req.body.emailDescription || findContact.emailDescription;
+            req.body.whatAppchat = req.body.whatAppchat || findContact.whatAppchat;
+            req.body.whatAppchatDescription = req.body.whatAppchatDescription || findContact.whatAppchatDescription;
+            let updateContact = await ContactDetail.findByIdAndUpdate({ _id: findContact._id }, { $set: req.body }, { new: true });
+            if (updateContact) {
+                return res.status(200).send({ status: 200, message: "Contact Detail update successfully", data: updateContact });
+            }
+        } else {
+            let result2 = await ContactDetail.create(req.body);
+            if (result2) {
+                return res.status(200).send({ status: 200, message: "Contact Detail update successfully", data: result2 });
+            }
+        }
+    } catch (err) {
+        console.log(err.message);
+        return res.status(500).send({ status: 500, msg: "internal server error", error: err.message, });
+    }
+};
+exports.viewContactDetails = async (req, res) => {
+    try {
+        let findcontactDetails = await ContactDetail.findOne();
+        if (!findcontactDetails) {
+            return res.status(404).send({ status: 404, message: "Contact Detail not found.", data: {} });
+        } else {
+            return res.status(200).send({ status: 200, message: "Contact Detail fetch successfully", data: findcontactDetails });
+        }
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ status: 500, msg: "internal server error", error: err.message, });
     }
 };
