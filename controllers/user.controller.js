@@ -635,7 +635,7 @@ exports.getTopRated = async (req, res) => {
         try {
                 const Data = await Product.find({ category: req.params.category }).sort({ ratings: -1 })
                 if (Data.length == 0) {
-                        return res.status(404).json({ status: 404, message: "Vendor data not found", data: {} });
+                        return res.status(404).json({ status: 404, message: "Data not found", data: {} });
                 } else {
                         let vendorData = []
                         for (let i = 0; i < Data.length; i++) {
@@ -653,6 +653,38 @@ exports.getTopRated = async (req, res) => {
                                 vendorData.push(obj)
                         }
                         return res.status(200).json({ status: 200, message: "Data found successfully.", data: vendorData })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getAllVendor = async (req, res) => {
+        try {
+                const vendor = await User.find({ userType: "VENDOR" });
+                if (vendor.length > 0) {
+                        let vendorData = []
+                        for (let i = 0; i < vendor.length; i++) {
+                                const Data = await Product.find({ vendorId: vendor[i]._id }).sort({ ratings: -1 })
+                                if (Data.length == 0) {
+                                        let obj = {
+                                                product: [],
+                                                vendor: vendor[i],
+                                                totalItem: 0
+                                        }
+                                        vendorData.push(obj)
+                                } else {
+                                        let obj = {
+                                                product: Data[0],
+                                                vendor: vendor[i],
+                                                totalItem: Data.length
+                                        }
+                                        vendorData.push(obj)
+                                }
+                        }
+                        return res.status(200).json({ status: 200, message: "Data found successfully.", data: vendorData })
+                } else {
+                        return res.status(404).json({ status: 404, message: "vendor not found", data: {} });
                 }
         } catch (err) {
                 console.log(err);
