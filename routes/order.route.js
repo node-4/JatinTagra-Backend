@@ -17,4 +17,5 @@ module.exports = (app) => {
     app.get("/api/v1/user/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
     app.get("/api/v1/user/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
     app.get("/api/v1/user/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
+    app.post("/api/v1/user/addComplain/:orderId", [authJwt.verifyToken], auth.addComplain);
 };

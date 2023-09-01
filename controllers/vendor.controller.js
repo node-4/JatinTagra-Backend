@@ -21,6 +21,7 @@ const userOrder = require("../models/orders/userOrder");
 const deliveryOrder = require("../models/orders/deliveryOrder");
 const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 const cloudinary = require("cloudinary");
+const complaint = require("../models/complaint");
 cloudinary.config({
         cloud_name: "https-www-pilkhuwahandloom-com",
         api_key: "886273344769554",
@@ -161,9 +162,30 @@ exports.verifyOtp = async (req, res) => {
                 res.status(500).send({ error: "internal server error" + err.message });
         }
 };
+exports.updateProfile = async (req, res) => {
+        try {
+                let user = await User.findById({ _id: req.user._id });
+                if (!user) {
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                } else {
+                        let password;
+                        if (req.body.password != (null || undefined)) {
+                                password = bcrypt.hashSync(req.body.password, 8);
+                        }
+                        req.body.shopOpen = req.body.shopOpen || user.shopOpen;
+                        req.body.fullName = req.body.fullName || user.fullName;
+                        req.body.password = password || user.password;
+                        let update = await User.findByIdAndUpdate(user._id, { $set: req.body }, { new: true, });
+                        return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Server error", status: 500 });
+        }
+};
 exports.getProfile = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         return res.status(200).json({ message: "get Profile", data: data });
                 } else {
@@ -238,7 +260,7 @@ exports.socialLogin = async (req, res) => {
 };
 exports.addMoney = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet + parseInt(req.body.balance) } }, { new: true });
                         if (update) {
@@ -264,7 +286,7 @@ exports.addMoney = async (req, res) => {
 };
 exports.removeMoney = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet - parseInt(req.body.balance) } }, { new: true });
                         if (update) {
@@ -290,7 +312,7 @@ exports.removeMoney = async (req, res) => {
 };
 exports.getWallet = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         return res.status(200).json({ message: "get Profile", data: data.wallet });
                 } else {
@@ -331,7 +353,7 @@ exports.getCategories = async (req, res, next) => {
 };
 exports.addProduct = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (!data) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
@@ -390,14 +412,14 @@ exports.addProduct = async (req, res) => {
 exports.getProducts = async (req, res) => {
         try {
                 if (req.query.category) {
-                        const product = await Product.find({ vendorId: req.user.id, category: req.query.category });
+                        const product = await Product.find({ vendorId: req.user._id, category: req.query.category });
                         if (product.length == 0) {
                                 return res.status(404).json({ message: "No data found", data: {} });
                         } else {
                                 res.status(200).json({ message: "Product data found.", status: 200, data: product });
                         }
                 } else {
-                        const product = await Product.find({ vendorId: req.user.id });
+                        const product = await Product.find({ vendorId: req.user._id });
                         if (product.length == 0) {
                                 return res.status(404).json({ message: "No data found", data: {} });
                         } else {
@@ -490,7 +512,7 @@ exports.editProduct = async (req, res) => {
 };
 exports.addDiscount = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (!data) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
@@ -526,7 +548,7 @@ exports.addDiscount = async (req, res) => {
 };
 exports.getDiscount = async (req, res) => {
         try {
-                const discount = await Discount.find({ vendorId: req.user.id });
+                const discount = await Discount.find({ vendorId: req.user._id });
                 if (discount.length == 0) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
@@ -659,7 +681,7 @@ exports.assignOrder = async (req, res) => {
 };
 exports.createOrder = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
                         const driver = await User.find({ userType: "DRIVER" });
                         if (driver.length > 0) {
@@ -715,6 +737,57 @@ exports.createOrder = async (req, res) => {
                 } else {
                         return res.status(404).json({ message: "No data found", data: {} });
                 }
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getComplaint = async (req, res, next) => {
+        try {
+                const orders = await complaint.find({ $or: [{ userId: req.user._id }, { vendorId: req.user._id }] }).populate('userId vendorId Orders Orders.$.productId')
+                if (orders.length == 0) {
+                        return res.status(404).json({ status: 404, message: "Complain not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "complain found", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getComplainbyId = async (req, res, next) => {
+        try {
+                const orders = await Complain.findById({ _id: req.params.id }).populate('vendorId userId Orders');
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+        } catch (error) {
+                console.log(error);
+                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getMetric = async (req, res, next) => {
+        try {
+                let query = { vendorId: req.user._id };
+                if ((req.query.fromDate != (null || undefined)) && (req.query.toDate != (null || undefined))) {
+                        query.$and = [
+                                { createdAt: { $gte: req.query.fromDate } },
+                                { createdAt: { $lte: req.query.toDate } },
+                        ]
+                }
+                const orders = await orderModel.find({ query, preparingStatus: "New" }).count()
+                const orders1 = await orderModel.find({ query, preparingStatus: "Preparing" }).count()
+                const orders2 = await orderModel.find({ query, preparingStatus: "Ready" }).count()
+                const orders3 = await orderModel.find({ query, preparingStatus: "out_for_delivery" }).count()
+                const orders4 = await orderModel.find({ query, preparingStatus: "delivered" }).count()
+                let dashboard = {
+                        new: orders,
+                        preparing: orders1,
+                        Ready: orders2,
+                        outForDelivery: orders3,
+                        deliveryOrder: orders4
+                }
+                return res.status(200).json({ status: 200, msg: "orders of user", data: dashboard })
         } catch (error) {
                 console.log(error);
                 res.status(501).send({ status: 501, message: "server error.", data: {}, });

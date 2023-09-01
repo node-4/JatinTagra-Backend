@@ -9,6 +9,7 @@ module.exports = (app) => {
     app.post("/api/v1/vendor/loginWithPhone", auth.loginWithPhone);
     app.post("/api/v1/vendor/:id", auth.verifyOtp);
     app.get("/api/v1/vendor/getProfile", [authJwt.verifyToken], auth.getProfile);
+    app.put("/api/v1/vendor/updateProfile", [authJwt.verifyToken], auth.updateProfile);
     app.post("/api/v1/vendor/resendOtp/:id", auth.resendOTP);
     app.post("/api/v1/vendor/resetPassword/:id", auth.resetPassword);
     app.post("/api/v1/vendor/socialLogin", auth.socialLogin);
@@ -34,4 +35,7 @@ module.exports = (app) => {
     app.get("/api/v1/vendor/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
     app.get("/api/v1/vendor/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
     app.post("/api/v1/vendor/createOrder", [authJwt.verifyToken], auth.createOrder);
+    app.get("/api/v1/complaint/allComplaint", [authJwt.verifyToken], auth.getComplaint);
+    app.get("/api/v1/complaint/viewComplaint/:id", [authJwt.verifyToken], auth.getComplainbyId);
+    app.get("/api/v1/Metric/getMetric", [authJwt.verifyToken], auth.getMetric)
 };

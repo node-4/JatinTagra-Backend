@@ -19,6 +19,7 @@ const Cart = require("../models/cartModel");
 const orderModel = require("../models/orders/orderModel");
 const userOrder = require("../models/orders/userOrder");
 const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
+const complaint = require("../models/complaint");
 
 exports.getCart = async (req, res) => {
         try {
@@ -635,6 +636,24 @@ exports.allDebitTransactionUser = async (req, res) => {
                 res.status(200).json({ data: data });
         } catch (err) {
                 res.status(400).json({ message: err.message });
+        }
+};
+exports.addComplain = async (req, res) => {
+        try {
+                const orders = await orderModel.findById({ _id: req.params.orderId });
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                }
+                let obj = {
+                        userId: req.user._id,
+                        vendorId: orders.vendorId,
+                        Orders: orders._id,
+                        reason: req.body.reason,
+                }
+                const Data = await complaint.create(obj);
+                return res.status(200).json({ message: "Complaint  send successfully.", status: 200, data: Data })
+        } catch (err) {
+                return res.status(500).send({ msg: "internal server error", error: err.message, });
         }
 };
 const reffralCode = async () => {

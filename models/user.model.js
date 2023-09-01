@@ -55,6 +55,10 @@ var userSchema = new schema(
             type: Boolean,
             default: false,
         },
+        shopOpen: {
+            type: Boolean,
+            default: false,
+        },
         shiftTiming: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "shiftTiming"
@@ -71,6 +75,27 @@ var userSchema = new schema(
             type: String,
             enum: ["Approved", "Reject", "Pending"],
         },
+        numOfReviews: {
+            type: Number,
+            default: 0,
+        },
+        reviews: [
+            {
+                user: {
+                    type: mongoose.Schema.ObjectId,
+                    ref: "user",
+                },
+                name: {
+                    type: String,
+                },
+                rating: {
+                    type: Number,
+                },
+                comment: {
+                    type: String,
+                },
+            },
+        ],
         wallet: {
             type: Number,
             default: 0,

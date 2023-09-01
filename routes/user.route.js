@@ -39,5 +39,5 @@ module.exports = (app) => {
     app.put("/api/v1/user/card/update/:id", [authJwt.verifyToken], auth.updatePaymentCard);
     app.get("/api/v1/user/card/getAllCard", [authJwt.verifyToken], auth.getPaymentCard);
     app.delete("/api/v1/user/card/delete/:id", [authJwt.verifyToken], auth.DeletePaymentCard);
-    app.get("/api/v1/user/getAllVendor", auth.getAllVendor);
+    app.get("/api/v1/user/getTopRated/:category", auth.getTopRated);
 };
