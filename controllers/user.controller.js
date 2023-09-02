@@ -192,7 +192,7 @@ exports.getCategories = async (req, res, next) => {
 };
 exports.getProducts = async (req, res) => {
         try {
-                const { search, fromDate, toDate, category, page, limit } = req.query;
+                const { search, fromDate, toDate, subcategory, category, page, limit } = req.query;
                 let query = {};
                 if (search) {
                         query.$or = [
@@ -202,6 +202,9 @@ exports.getProducts = async (req, res) => {
                 }
                 if (category) {
                         query.category = category
+                }
+                if (subcategory) {
+                        query.subcategory = subcategory
                 }
                 if (fromDate && !toDate) {
                         query.createdAt = { $gte: fromDate };
