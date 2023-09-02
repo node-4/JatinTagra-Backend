@@ -444,7 +444,7 @@ exports.checkout = async (req, res) => {
                                         }
                                 }
                                 let findUserOrder = await userOrder.findOne({ orderId: orderId }).populate('Orders');
-                                res.status(200).json({ status: 200, message: "Order create successfully. ", data: findUserOrder })
+                                return res.status(200).json({ status: 200, message: "Order create successfully. ", data: findUserOrder })
                         }
                 } else {
                         let findCart = await Cart.findOne({ userId: req.user._id });
@@ -502,7 +502,7 @@ exports.checkout = async (req, res) => {
                                         }
                                 }
                                 let findUserOrder = await userOrder.findOne({ orderId: orderId }).populate('Orders');
-                                res.status(200).json({ status: 200, message: "Order create successfully. ", data: findUserOrder })
+                                return res.status(200).json({ status: 200, message: "Order create successfully. ", data: findUserOrder })
                         }
                 }
         } catch (error) {
