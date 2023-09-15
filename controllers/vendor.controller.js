@@ -590,7 +590,7 @@ exports.deleteReview = async (req, res, next) => {
 };
 exports.getOrders = async (req, res, next) => {
         try {
-                const orders = await orderModel.find({ vendorId: req.user._id, orderStatus: "confirmed" }).populate('userId category productId discountId returnOrder');
+                const orders = await orderModel.find({ vendorId: req.user._id, orderStatus: "confirmed", preparingStatus: req.query.preparingStatus }).populate('userId category productId discountId returnOrder');
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }

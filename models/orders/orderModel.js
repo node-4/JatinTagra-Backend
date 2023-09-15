@@ -142,8 +142,8 @@ const DocumentSchema = schema({
   },
   preparingStatus: {
     type: String,
-    enum: ["New", "Preparing", "Ready", "out_for_delivery", "delivered", ""],
-    default: "New"
+    enum: ["pending", "Reject", "New", "Preparing", "Ready", "out_for_delivery", "delivered"],
+    default: "pending"
   },
   deliveryStatus: {
     type: String,
