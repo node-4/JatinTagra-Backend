@@ -140,6 +140,9 @@ const DocumentSchema = schema({
     enum: ["Package", "Other"],
     default: "Other"
   },
+  time: {
+    type: Date,
+  },
   preparingStatus: {
     type: String,
     enum: ["pending", "Reject", "New", "Preparing", "Ready", "out_for_delivery", "delivered"],

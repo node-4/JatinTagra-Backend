@@ -41,4 +41,5 @@ module.exports = (app) => {
     app.delete("/api/v1/user/card/delete/:id", [authJwt.verifyToken], auth.DeletePaymentCard);
     app.get("/api/v1/user/getTopRated/:category", auth.getTopRated);
     app.get("/api/v1/user/getAllVendor", auth.getAllVendor);
+    app.put("/api/v1/auth/updateLocation", [authJwt.verifyToken], auth.updateLocation);
 };

@@ -694,3 +694,23 @@ exports.getAllVendor = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+exports.updateLocation = async (req, res) => {
+        try {
+                const user = await User.findOne({ _id: req.user._id, });
+                if (!user) {
+                        return res.status(404).send({ status: 404, message: "User not found" });
+                } else {
+                        if (req.body.currentLat || req.body.currentLong) {
+                                coordinates = [parseFloat(req.body.currentLat), parseFloat(req.body.currentLong)]
+                                req.body.currentLocation = { type: "Point", coordinates };
+                        }
+                        let update = await User.findByIdAndUpdate({ _id: user._id }, { $set: { currentLocation: req.body.currentLocation, city: req.body.city, sector: req.body.sector } }, { new: true });
+                        if (update) {
+                                return res.status(200).send({ status: 200, message: "Location update successfully.", data: update.currentLocation });
+                        }
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).send({ status: 500, message: "Server error" + error.message });
+        }
+};

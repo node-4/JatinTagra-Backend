@@ -630,8 +630,14 @@ exports.updateOrderStatus = async (req, res) => {
                 if (!orders) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 } else {
-                        const update = await orderModel.findByIdAndUpdate({ _id: orders._id }, { $set: { preparingStatus: req.body.preparingStatus } }, { new: true });
-                        return res.status(200).json({ status: 200, msg: "orders of user", data: update })
+                        if (req.body.preparingStatus == "Reject") {
+                                const update = await orderModel.findByIdAndUpdate({ _id: orders._id }, { $set: { preparingStatus: req.body.preparingStatus } }, { new: true });
+                                return res.status(200).json({ status: 200, msg: "orders of user", data: update })
+                        } else {
+                                let time = new Date(Date.now() + req.body.time * 60 * 1000);
+                                const update = await orderModel.findByIdAndUpdate({ _id: orders._id }, { $set: { time: time, preparingStatus: req.body.preparingStatus } }, { new: true });
+                                return res.status(200).json({ status: 200, msg: "orders of user", data: update })
+                        }
                 }
         } catch (error) {
                 console.log(error);
