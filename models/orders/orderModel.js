@@ -116,6 +116,10 @@ const DocumentSchema = schema({
   sending: {
     type: String,
   },
+  location: {
+    type: Number,
+    default: 0
+  },
   orderStatus: {
     type: String,
     enum: ["unconfirmed", "confirmed"],
