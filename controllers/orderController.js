@@ -35,12 +35,12 @@ exports.getCart = async (req, res) => {
                         if (!findCart) {
                                 return res.status(404).json({ status: 404, message: "Cart is empty.", data: {} });
                         } else {
-                                res.status(200).json({ message: "cart data found.", status: 200, data: findCart });
+                                return res.status(200).json({ message: "cart data found.", status: 200, data: findCart });
                         }
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.addToCart = async (req, res) => {
@@ -90,7 +90,7 @@ exports.addToCart = async (req, res) => {
                                                                         let paidAmount = Number(totalAmount + tax + shipping).toFixed(2);
                                                                         console.log(paidAmount, "", totalAmount, "", discount, "", tax, "", shipping);
                                                                         let updateCart1 = await Cart.findByIdAndUpdate({ _id: findCart._id }, { $set: { totalAmount: totalAmount, discount: discounts, paidAmount: paidAmount, tax: tax, shipping: shipping, totalItem: updateCart.products.length, } }, { new: true })
-                                                                        res.status(200).json({ status: 200, message: "Product successfully add to cart.", data: updateCart1 })
+                                                                        return res.status(200).json({ status: 200, message: "Product successfully add to cart.", data: updateCart1 })
                                                                 }
                                                         }
                                                 }
@@ -138,7 +138,7 @@ exports.addToCart = async (req, res) => {
                                                         totalItem: products.length,
                                                 }
                                                 const Data = await Cart.create(obj);
-                                                res.status(200).json({ status: 200, message: "Product successfully add to cart. ", data: Data })
+                                                return res.status(200).json({ status: 200, message: "Product successfully add to cart. ", data: Data })
                                         }
                                 } else {
                                         return res.status(404).json({ message: "No data found", data: {} });
@@ -189,7 +189,7 @@ exports.addToCart = async (req, res) => {
                                                 totalItem: products.length,
                                         }
                                         const Data = await Cart.create(obj);
-                                        res.status(200).json({ status: 200, message: "Product successfully add to cart. ", data: Data })
+                                        return res.status(200).json({ status: 200, message: "Product successfully add to cart. ", data: Data })
                                 } else {
                                         return res.status(404).json({ message: "No data found", data: {} });
                                 }
@@ -197,7 +197,7 @@ exports.addToCart = async (req, res) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.updateQuantity = async (req, res) => {
@@ -274,7 +274,7 @@ exports.updateQuantity = async (req, res) => {
                                                 let paidAmount = Number(totalAmount + tax + shipping).toFixed(2);
                                                 console.log(paidAmount, "", totalAmount, "", tax, "", shipping);
                                                 let updateCart1 = await Cart.findByIdAndUpdate({ _id: findCart._id }, { $set: { totalAmount: totalAmount, discount: discounts, paidAmount: paidAmount, tax: tax, shipping: shipping, totalItem: updateCart.products.length, } }, { new: true })
-                                                res.status(200).json({ status: 200, message: "Product successfully add to cart.", data: updateCart1 })
+                                                return res.status(200).json({ status: 200, message: "Product successfully add to cart.", data: updateCart1 })
                                         }
                                 }
                         } else {
@@ -283,7 +283,7 @@ exports.updateQuantity = async (req, res) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.deleteProductfromCart = async (req, res) => {
@@ -321,7 +321,7 @@ exports.deleteProductfromCart = async (req, res) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.deleteCart = async (req, res) => {
@@ -345,7 +345,7 @@ exports.deleteCart = async (req, res) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.addAdressToCart = async (req, res) => {
@@ -506,7 +506,7 @@ exports.checkout = async (req, res) => {
                         }
                 }
         } catch (error) {
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.placeOrder = async (req, res) => {
@@ -558,12 +558,12 @@ exports.cancelReturnOrder = async (req, res, next) => {
                         const data = await cancelReturnOrder.create(obj);
                         let update = await orderModel.findByIdAndUpdate({ _id: orders._id }, { $set: { returnOrder: data._id, returnStatus: req.body.orderStatus } }, { new: true }).populate('returnOrder');
                         if (update) {
-                                res.status(200).json({ message: `Order ${req.body.orderStatus} Successfully.`, status: 200, data: update });
+                                return res.status(200).json({ message: `Order ${req.body.orderStatus} Successfully.`, status: 200, data: update });
                         }
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.getAllOrders = async (req, res, next) => {
@@ -575,7 +575,7 @@ exports.getAllOrders = async (req, res, next) => {
                 return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.getOrders = async (req, res, next) => {
@@ -587,7 +587,7 @@ exports.getOrders = async (req, res, next) => {
                 return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.getcancelReturnOrder = async (req, res, next) => {
@@ -599,7 +599,7 @@ exports.getcancelReturnOrder = async (req, res, next) => {
                 return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.getOrderbyId = async (req, res, next) => {
@@ -611,31 +611,31 @@ exports.getOrderbyId = async (req, res, next) => {
                 return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.allTransactionUser = async (req, res) => {
         try {
                 const data = await transaction.find({ user: req.user._id }).populate("user orderId");
-                res.status(200).json({ data: data });
+                return res.status(200).json({ data: data });
         } catch (err) {
-                res.status(400).json({ message: err.message });
+                return res.status(400).json({ message: err.message });
         }
 };
 exports.allcreditTransactionUser = async (req, res) => {
         try {
                 const data = await transaction.find({ user: req.user._id, type: "Credit" });
-                res.status(200).json({ data: data });
+                return res.status(200).json({ data: data });
         } catch (err) {
-                res.status(400).json({ message: err.message });
+                return res.status(400).json({ message: err.message });
         }
 };
 exports.allDebitTransactionUser = async (req, res) => {
         try {
                 const data = await transaction.find({ user: req.user._id, type: "Debit" });
-                res.status(200).json({ data: data });
+                return res.status(200).json({ data: data });
         } catch (err) {
-                res.status(400).json({ message: err.message });
+                return res.status(400).json({ message: err.message });
         }
 };
 exports.addComplain = async (req, res) => {

@@ -25,20 +25,20 @@ exports.signInWithPhone = async (req, res) => {
                         req.body.accountVerification = false;
                         req.body.userType = "DRIVER";
                         const userCreate = await User.create(req.body);
-                        res.status(200).send({ message: "Registered successfully ", data: userCreate, });
+                        return res.status(200).send({ message: "Registered successfully ", data: userCreate, });
                 } else {
                         return res.status(409).send({ status: 409, msg: "Already Exit" });
                 }
         } catch (error) {
                 console.error(error);
-                res.status(500).json({ message: "Server error" });
+                return res.status(500).json({ message: "Server error" });
         }
 };
 exports.completeRegistration = async (req, res) => {
         try {
                 let user = await User.findById({ _id: req.params.id });
                 if (!user) {
-                        res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
                 } else {
                         let data = {
                                 shiftTiming: req.body.shiftTiming,
@@ -73,12 +73,12 @@ exports.completeRegistration = async (req, res) => {
                                         }
                                         const address = await Address.create(obj);
                                 }
-                                res.status(200).send({ message: "Data update successfully", status: 200, data: update });
+                                return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
                         }
                 }
         } catch (error) {
                 console.error(error);
-                res.status(500).json({ message: "Server error", status: 500 });
+                return res.status(500).json({ message: "Server error", status: 500 });
         }
 };
 exports.loginWithPhone = async (req, res) => {
@@ -93,10 +93,10 @@ exports.loginWithPhone = async (req, res) => {
                 userObj.otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
                 userObj.accountVerification = false;
                 const updated = await User.findOneAndUpdate({ phone: phone, userType: "DRIVER" }, userObj, { new: true, });
-                res.status(200).send({ userId: updated._id, otp: updated.otp });
+                return res.status(200).send({ userId: updated._id, otp: updated.otp });
         } catch (error) {
                 console.error(error);
-                res.status(500).json({ message: "Server error" });
+                return res.status(500).json({ message: "Server error" });
         }
 };
 exports.verifyOtp = async (req, res) => {
@@ -113,10 +113,10 @@ exports.verifyOtp = async (req, res) => {
                 const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
                         expiresIn: authConfig.accessTokenTime,
                 });
-                res.status(200).send({ message: "logged in successfully", accessToken: accessToken, data: updated });
+                return res.status(200).send({ message: "logged in successfully", accessToken: accessToken, data: updated });
         } catch (err) {
                 console.log(err.message);
-                res.status(500).send({ error: "internal server error" + err.message });
+                return res.status(500).send({ error: "internal server error" + err.message });
         }
 };
 exports.resendOTP = async (req, res) => {
@@ -130,10 +130,10 @@ exports.resendOTP = async (req, res) => {
                 const otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
                 const accountVerification = false;
                 const updated = await User.findOneAndUpdate({ _id: user._id }, { otp, otpExpiration, accountVerification }, { new: true });
-                res.status(200).send({ message: "OTP resent", otp: otp });
+                return res.status(200).send({ message: "OTP resent", otp: otp });
         } catch (error) {
                 console.error(error);
-                res.status(500).send({ message: "Server error" + error.message });
+                return res.status(500).send({ message: "Server error" + error.message });
         }
 };
 exports.getProfile = async (req, res) => {
@@ -146,14 +146,14 @@ exports.getProfile = async (req, res) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.updateBankDetails = async (req, res) => {
         try {
                 let user = await User.findById({ _id: req.params.id });
                 if (!user) {
-                        res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
                 } else {
                         const data1 = await bankDetails.findById({ user: user._id });
                         if (data1) {
@@ -165,7 +165,7 @@ exports.updateBankDetails = async (req, res) => {
                                         user: user._id
                                 }
                                 let update = await bankDetails.findByIdAndUpdate(data1._id, obj, { new: true, });
-                                res.status(200).send({ message: "Data update successfully", status: 200, data: update });
+                                return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
                         } else {
                                 let obj = {
                                         bankName: req.body.bankName,
@@ -175,19 +175,19 @@ exports.updateBankDetails = async (req, res) => {
                                         user: user._id
                                 }
                                 const address = await bankDetails.create(obj);
-                                res.status(200).send({ message: "Data saved successfully", status: 200, data: address });
+                                return res.status(200).send({ message: "Data saved successfully", status: 200, data: address });
                         }
                 }
         } catch (error) {
                 console.error(error);
-                res.status(500).json({ message: "Server error", status: 500 });
+                return res.status(500).json({ message: "Server error", status: 500 });
         }
 };
 exports.updateDocument = async (req, res) => {
         try {
                 let user = await User.findById({ _id: req.params.id });
                 if (!user) {
-                        res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
                 } else {
                         const data1 = await bankDetails.findById({ user: user._id });
                         if (data1) {
@@ -199,7 +199,7 @@ exports.updateDocument = async (req, res) => {
                                         user: user._id
                                 }
                                 let update = await bankDetails.findByIdAndUpdate(data1._id, obj, { new: true, });
-                                res.status(200).send({ message: "Data update successfully", status: 200, data: update });
+                                return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
                         } else {
                                 let obj = {
                                         panCard: req.body.panCard,
@@ -209,12 +209,12 @@ exports.updateDocument = async (req, res) => {
                                         user: user._id
                                 }
                                 const address = await bankDetails.create(obj);
-                                res.status(200).send({ message: "Data saved successfully", status: 200, data: address });
+                                return res.status(200).send({ message: "Data saved successfully", status: 200, data: address });
                         }
                 }
         } catch (error) {
                 console.error(error);
-                res.status(500).json({ message: "Server error", status: 500 });
+                return res.status(500).json({ message: "Server error", status: 500 });
         }
 };
 exports.getOrders = async (req, res, next) => {
@@ -226,7 +226,7 @@ exports.getOrders = async (req, res, next) => {
                 return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.getPackageOrders = async (req, res, next) => {
@@ -238,7 +238,7 @@ exports.getPackageOrders = async (req, res, next) => {
                 return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
 exports.updateOrderStatus = async (req, res) => {
@@ -257,6 +257,6 @@ exports.updateOrderStatus = async (req, res) => {
                 }
         } catch (error) {
                 console.log(error);
-                res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };

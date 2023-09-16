@@ -30,16 +30,16 @@ exports.registration = async (req, res) => {
             req.body.userType = "ADMIN";
             req.body.accountVerification = true;
             const userCreate = await User.create(req.body);
-            res.status(200).send({
+            return res.status(200).send({
                 message: "registered successfully ",
                 data: userCreate,
             });
         } else {
-            res.status(409).send({ message: "Already Exist", data: [] });
+            return res.status(409).send({ message: "Already Exist", data: [] });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 exports.signin = async (req, res) => {
@@ -58,10 +58,10 @@ exports.signin = async (req, res) => {
         const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
             expiresIn: authConfig.accessTokenTime,
         });
-        res.status(201).send({ data: user, accessToken: accessToken });
+        return res.status(201).send({ data: user, accessToken: accessToken });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: "Server error" + error.message });
+        return res.status(500).send({ message: "Server error" + error.message });
     }
 };
 exports.update = async (req, res) => {
@@ -80,10 +80,10 @@ exports.update = async (req, res) => {
             user.password = bcrypt.hashSync(password, 8) || user.password;
         }
         const updated = await user.save();
-        res.status(200).send({ message: "updated", data: updated });
+        return res.status(200).send({ message: "updated", data: updated });
     } catch (err) {
         console.log(err);
-        res.status(500).send({
+        return res.status(500).send({
             message: "internal server error " + err.message,
         });
     }
@@ -92,7 +92,7 @@ exports.createCategory = async (req, res) => {
     try {
         let findCategory = await Category.findOne({ name: req.body.name });
         if (findCategory) {
-            res.status(409).json({ message: "category already exit.", status: 404, data: {} });
+            return res.status(409).json({ message: "category already exit.", status: 404, data: {} });
         } else {
             let image;
             if (req.file) {
@@ -100,11 +100,11 @@ exports.createCategory = async (req, res) => {
             }
             const data = { name: req.body.name, image: image };
             const category = await Category.create(data);
-            res.status(200).json({ message: "category add successfully.", status: 200, data: category });
+            return res.status(200).json({ message: "category add successfully.", status: 200, data: category });
         }
 
     } catch (error) {
-        res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
     }
 };
 exports.getCategories = async (req, res) => {
@@ -115,7 +115,7 @@ exports.updateCategory = async (req, res) => {
     const { id } = req.params;
     const category = await Category.findById(id);
     if (!category) {
-        res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
+        return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
     }
     let image;
     if (req.file) {
@@ -130,10 +130,10 @@ exports.removeCategory = async (req, res) => {
     const { id } = req.params;
     const category = await Category.findById(id);
     if (!category) {
-        res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
+        return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
     } else {
         await Category.findByIdAndDelete(category._id);
-        res.status(200).json({ message: "Category Deleted Successfully !" });
+        return res.status(200).json({ message: "Category Deleted Successfully !" });
     }
 };
 exports.createSubCategory = async (req, res) => {
@@ -294,14 +294,14 @@ exports.AddBanner = async (req, res) => {
     try {
         const category = await Category.findById(req.body.categoryId);
         if (!category) {
-            res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
+            return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
         }
         const data = { image: req.body.image, desc: req.body.desc, category: category._id }
         const Data = await banner.create(data);
-        res.status(200).json({ status: 200, message: "Banner is Addded ", data: Data })
+        return res.status(200).json({ status: 200, message: "Banner is Addded ", data: Data })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.getBanner = async (req, res) => {
@@ -310,10 +310,10 @@ exports.getBanner = async (req, res) => {
         if (Banner.length == 0) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
-        res.status(200).json({ status: 200, message: "All banner Data found successfully.", data: Banner })
+        return res.status(200).json({ status: 200, message: "All banner Data found successfully.", data: Banner })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.getBannerById = async (req, res) => {
@@ -322,10 +322,10 @@ exports.getBannerById = async (req, res) => {
         if (!Banner) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
-        res.status(200).json({ status: 200, message: "Data found successfully.", data: Banner })
+        return res.status(200).json({ status: 200, message: "Data found successfully.", data: Banner })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.DeleteBanner = async (req, res) => {
@@ -335,10 +335,10 @@ exports.DeleteBanner = async (req, res) => {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
         await banner.findByIdAndDelete({ _id: req.params.id });
-        res.status(200).json({ status: 200, message: "Banner delete successfully.", data: {} })
+        return res.status(200).json({ status: 200, message: "Banner delete successfully.", data: {} })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.DeleteHelpandSupport = async (req, res) => {
@@ -348,10 +348,10 @@ exports.DeleteHelpandSupport = async (req, res) => {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         } else {
             await helpandSupport.findOneAndDelete({ user: req.params.id })
-            res.status(200).json({ status: 200, message: "Data delete successfully.", data: {} })
+            return res.status(200).json({ status: 200, message: "Data delete successfully.", data: {} })
         }
     } catch (err) {
-        res.status(501).send({ status: 501, message: "server error.", data: {} });
+        return res.status(501).send({ status: 501, message: "server error.", data: {} });
     }
 };
 exports.getAllHelpandSupport = async (req, res) => {
@@ -360,21 +360,21 @@ exports.getAllHelpandSupport = async (req, res) => {
         if (data.length == 0) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         } else {
-            res.status(200).json({ status: 200, message: "Data found successfully.", data: data })
+            return res.status(200).json({ status: 200, message: "Data found successfully.", data: data })
         }
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {} });
+        return res.status(501).send({ status: 501, message: "server error.", data: {} });
     }
 };
 exports.AddShiftPreference = async (req, res) => {
     try {
         const data = { toAmount: req.body.toAmount, fromAmount: req.body.fromAmount, hours: req.body.hours, salaryPer: req.body.salaryPer, dayType: req.body.dayType, type: req.body.type, }
         const Data = await shiftPreference.create(data);
-        res.status(200).json({ status: 200, message: "ShiftPreference is Added ", data: Data })
+        return res.status(200).json({ status: 200, message: "ShiftPreference is Added ", data: Data })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.getShiftPreference = async (req, res) => {
@@ -383,10 +383,10 @@ exports.getShiftPreference = async (req, res) => {
         if (ShiftPreference.length == 0) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
-        res.status(200).json({ status: 200, message: "All shiftPreference Data found successfully.", data: ShiftPreference })
+        return res.status(200).json({ status: 200, message: "All shiftPreference Data found successfully.", data: ShiftPreference })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.getShiftPreferenceById = async (req, res) => {
@@ -395,10 +395,10 @@ exports.getShiftPreferenceById = async (req, res) => {
         if (!ShiftPreference) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
-        res.status(200).json({ status: 200, message: "Data found successfully.", data: ShiftPreference })
+        return res.status(200).json({ status: 200, message: "Data found successfully.", data: ShiftPreference })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.DeleteShiftPreference = async (req, res) => {
@@ -408,20 +408,20 @@ exports.DeleteShiftPreference = async (req, res) => {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
         await shiftPreference.findByIdAndDelete({ _id: req.params.id });
-        res.status(200).json({ status: 200, message: "ShiftPreference delete successfully.", data: {} })
+        return res.status(200).json({ status: 200, message: "ShiftPreference delete successfully.", data: {} })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.AddShiftTiming = async (req, res) => {
     try {
         const data = { to: req.body.to, from: req.body.from, type: req.body.type }
         const Data = await shiftTiming.create(data);
-        res.status(200).json({ status: 200, message: "ShiftTiming is Added ", data: Data })
+        return res.status(200).json({ status: 200, message: "ShiftTiming is Added ", data: Data })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.getShiftTiming = async (req, res) => {
@@ -430,10 +430,10 @@ exports.getShiftTiming = async (req, res) => {
         if (ShiftTiming.length == 0) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
-        res.status(200).json({ status: 200, message: "All shiftTiming Data found successfully.", data: ShiftTiming })
+        return res.status(200).json({ status: 200, message: "All shiftTiming Data found successfully.", data: ShiftTiming })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.getShiftTimingById = async (req, res) => {
@@ -442,10 +442,10 @@ exports.getShiftTimingById = async (req, res) => {
         if (!ShiftTiming) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
-        res.status(200).json({ status: 200, message: "Data found successfully.", data: ShiftTiming })
+        return res.status(200).json({ status: 200, message: "Data found successfully.", data: ShiftTiming })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.DeleteShiftTiming = async (req, res) => {
@@ -455,10 +455,10 @@ exports.DeleteShiftTiming = async (req, res) => {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         }
         await shiftTiming.findByIdAndDelete({ _id: req.params.id });
-        res.status(200).json({ status: 200, message: "ShiftTiming delete successfully.", data: {} })
+        return res.status(200).json({ status: 200, message: "ShiftTiming delete successfully.", data: {} })
     } catch (err) {
         console.log(err);
-        res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
 exports.createSubscription = async (req, res) => {
