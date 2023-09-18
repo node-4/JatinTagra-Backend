@@ -630,7 +630,7 @@ exports.updateOrderStatus = async (req, res) => {
                 if (!orders) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 } else {
-                        if (req.body.preparingStatus == "Reject") {
+                        if ((req.body.preparingStatus == "Reject") || (req.body.preparingStatus == "delivered")) {
                                 const update = await orderModel.findByIdAndUpdate({ _id: orders._id }, { $set: { preparingStatus: req.body.preparingStatus } }, { new: true });
                                 return res.status(200).json({ status: 200, msg: "orders of user", data: update })
                         } else {
