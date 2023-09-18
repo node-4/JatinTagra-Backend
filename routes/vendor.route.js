@@ -34,7 +34,7 @@ module.exports = (app) => {
     app.get("/api/v1/vendor/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
     app.get("/api/v1/vendor/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
     app.get("/api/v1/vendor/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
-    app.post("/api/v1/vendor/createOrder", [authJwt.verifyToken], auth.createOrder);
+    app.post("/api/v1/vendor/create/Order", [authJwt.verifyToken], auth.createOrder);
     app.get("/api/v1/complaint/allComplaint", [authJwt.verifyToken], auth.getComplaint);
     app.get("/api/v1/complaint/viewComplaint/:id", [authJwt.verifyToken], auth.getComplainbyId);
     app.get("/api/v1/Metric/getMetric", [authJwt.verifyToken], auth.getMetric)
