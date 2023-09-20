@@ -516,7 +516,7 @@ exports.editProduct = async (req, res) => {
                                         cGst: req.body.cGst || product.cGst,
                                         sGst: req.body.sGst || product.sGst,
                                 }
-                                const update = await Product.findByIdAndUpdate({ _id: product._id }, { obj }, { new: true });
+                                const update = await Product.findByIdAndUpdate({ _id: product._id }, { $set: obj }, { new: true });
                                 return res.status(200).json({ message: "Product update successfully.", status: 200, data: update });
 
                         }
