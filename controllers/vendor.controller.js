@@ -526,6 +526,31 @@ exports.editProduct = async (req, res) => {
                 return res.status(501).send({ message: "server error.", data: {}, });
         }
 };
+
+exports.activeDeactiveProduct = async (req, res) => {
+        try {
+                const data = await User.findOne({ _id: req.user._id, });
+                if (!data) {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                } else {
+                        const product = await Product.findById({ _id: req.params.id });
+                        if (!product) {
+                                return res.status(404).json({ message: "No data found", data: {} });
+                        } else {
+                                if (product.available == true) {
+                                        const update = await Product.findByIdAndUpdate({ _id: product._id }, { $set: { available: false } }, { new: true });
+                                        return res.status(200).json({ message: "Product deActive successfully.", status: 200, data: update });
+                                } else {
+                                        const update = await Product.findByIdAndUpdate({ _id: product._id }, { $set: { available: true } }, { new: true });
+                                        return res.status(200).json({ message: "Product active successfully.", status: 200, data: update });
+                                }
+                        }
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
 exports.addDiscount = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user._id, });

@@ -193,7 +193,7 @@ exports.getCategories = async (req, res, next) => {
 exports.getProducts = async (req, res) => {
         try {
                 const { search, fromDate, toDate, subcategory, category, page, limit } = req.query;
-                let query = {};
+                let query = { available: true };
                 if (search) {
                         query.$or = [
                                 { "name": { $regex: req.query.search, $options: "i" }, },
