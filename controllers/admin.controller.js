@@ -465,11 +465,11 @@ exports.createSubscription = async (req, res) => {
     try {
         let findSubscription = await subscription.findOne({ name: req.body.name });
         if (findSubscription) {
-            res.json({ status: 409, message: 'subscription already created.', data: {} });
+            return res.json({ status: 409, message: 'subscription already created.', data: {} });
         } else {
             req.body.totalAmount = req.body.month * req.body.price;
             const newsubscription = await subscription.create(req.body);
-            res.json({ status: 200, message: 'subscription create successfully', data: newsubscription });
+            return res.json({ status: 200, message: 'subscription create successfully', data: newsubscription });
         }
     } catch (err) {
         return res.status(400).json({ message: err.message });
