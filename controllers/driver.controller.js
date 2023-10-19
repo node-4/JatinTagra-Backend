@@ -191,6 +191,30 @@ exports.updateDocument = async (req, res) => {
                 } else {
                         const data1 = await bankDetails.findById({ user: user._id });
                         if (data1) {
+                                if (req.files['panCard']) {
+                                        let panCard = req.files['panCard'];
+                                        req.body.panCard = panCard[0].path;
+                                } else {
+                                        req.body.panCard = findData.panCard
+                                }
+                                if (req.files['drivingLicense']) {
+                                        let drivingLicense = req.files['drivingLicense'];
+                                        req.body.drivingLicense = drivingLicense[0].path;
+                                } else {
+                                        req.body.drivingLicense = findData.drivingLicense
+                                }
+                                if (req.files['passbook']) {
+                                        let passbook = req.files['passbook'];
+                                        req.body.passbook = passbook[0].path;
+                                } else {
+                                        req.body.passbook = findData.passbook
+                                }
+                                if (req.files['aadharCard']) {
+                                        let aadharCard = req.files['aadharCard'];
+                                        req.body.aadharCard = aadharCard[0].path;
+                                } else {
+                                        req.body.aadharCard = findData.aadharCard
+                                }
                                 let obj = {
                                         panCard: req.body.panCard,
                                         drivingLicense: req.body.drivingLicense,
@@ -201,6 +225,30 @@ exports.updateDocument = async (req, res) => {
                                 let update = await bankDetails.findByIdAndUpdate(data1._id, obj, { new: true, });
                                 return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
                         } else {
+                                if (req.files['panCard']) {
+                                        let panCard = req.files['panCard'];
+                                        req.body.panCard = panCard[0].path;
+                                } else {
+                                        req.body.panCard = findData.panCard
+                                }
+                                if (req.files['drivingLicense']) {
+                                        let drivingLicense = req.files['drivingLicense'];
+                                        req.body.drivingLicense = drivingLicense[0].path;
+                                } else {
+                                        req.body.drivingLicense = findData.drivingLicense
+                                }
+                                if (req.files['passbook']) {
+                                        let passbook = req.files['passbook'];
+                                        req.body.passbook = passbook[0].path;
+                                } else {
+                                        req.body.passbook = findData.passbook
+                                }
+                                if (req.files['aadharCard']) {
+                                        let aadharCard = req.files['aadharCard'];
+                                        req.body.aadharCard = aadharCard[0].path;
+                                } else {
+                                        req.body.aadharCard = findData.aadharCard
+                                }
                                 let obj = {
                                         panCard: req.body.panCard,
                                         drivingLicense: req.body.drivingLicense,
