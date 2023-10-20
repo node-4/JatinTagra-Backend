@@ -1,11 +1,13 @@
 const { validateUser } = require("../middlewares");
 const auth = require("../controllers/driver.controller");
 const { authJwt, authorizeRoles } = require("../middlewares");
-var multer = require("multer");
 const path = require("path");
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => { cb(null, "uploads"); }, filename: (req, file, cb) => { cb(null, Date.now() + path.extname(file.originalname)); },
-});
+var multer = require("multer");
+const authConfig = require("../configs/auth.config");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+cloudinary.config({ cloud_name: authConfig.cloud_name, api_key: authConfig.api_key, api_secret: authConfig.api_secret, });
+const storage = new CloudinaryStorage({ cloudinary: cloudinary, params: { folder: "product", allowed_formats: ["jpg", "avif", "webp", "jpeg", "png", "PNG", "xlsx", "xls", "pdf", "PDF"], }, });
 const upload = multer({ storage: storage });
 var cpUpload3 = upload.fields([{ name: 'panCard', maxCount: 1 },
 { name: 'drivingLicense', maxCount: 1 },

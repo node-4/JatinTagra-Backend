@@ -189,7 +189,7 @@ exports.updateDocument = async (req, res) => {
                 if (!user) {
                         return res.status(404).send({ message: "Data not found", status: 404, data: [] });
                 } else {
-                        const data1 = await bankDetails.findById({ user: user._id });
+                        const data1 = await bankDetails.findOne({ user: user._id });
                         if (data1) {
                                 if (req.files['panCard']) {
                                         let panCard = req.files['panCard'];
