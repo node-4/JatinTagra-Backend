@@ -17,6 +17,7 @@ const userCard = require("../models/userCard");
 const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
 const shiftPreference = require("../models/shiftPreference");
+const preferedArea = require("../models/preferedArea");
 const shiftTiming = require("../models/shiftTiming");
 const ContactDetail = require("../models/ContactDetail");
 const subscription = require('../models/subscription')
@@ -519,5 +520,52 @@ exports.viewContactDetails = async (req, res) => {
     } catch (err) {
         console.log(err);
         return res.status(500).send({ status: 500, msg: "internal server error", error: err.message, });
+    }
+};
+exports.AddPreferedArea = async (req, res) => {
+    try {
+        const data = { toAmount: req.body.toAmount, fromAmount: req.body.fromAmount, area: req.body.area, salaryPer: req.body.salaryPer, km: req.body.km }
+        const Data = await preferedArea.create(data);
+        return res.status(200).json({ status: 200, message: "Prefered Area is Added ", data: Data })
+    } catch (err) {
+        console.log(err);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getPreferedArea = async (req, res) => {
+    try {
+        const PreferedArea = await preferedArea.find();
+        if (PreferedArea.length == 0) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        return res.status(200).json({ status: 200, message: "All Prefered Area Data found successfully.", data: PreferedArea })
+    } catch (err) {
+        console.log(err);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getPreferedAreaById = async (req, res) => {
+    try {
+        const PreferedArea = await preferedArea.findById({ _id: req.params.id });
+        if (!PreferedArea) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        return res.status(200).json({ status: 200, message: "Data found successfully.", data: PreferedArea })
+    } catch (err) {
+        console.log(err);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.DeletePreferedArea = async (req, res) => {
+    try {
+        const PreferedArea = await preferedArea.findById({ _id: req.params.id });
+        if (!PreferedArea) {
+            return res.status(404).json({ status: 404, message: "No data found", data: {} });
+        }
+        await preferedArea.findByIdAndDelete({ _id: req.params.id });
+        return res.status(200).json({ status: 200, message: "Prefered Area delete successfully.", data: {} })
+    } catch (err) {
+        console.log(err);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };

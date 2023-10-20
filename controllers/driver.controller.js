@@ -308,3 +308,17 @@ exports.updateOrderStatus = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+exports.driverUpdate = async (req, res) => {
+        try {
+                let user = await User.findById({ _id: req.user._id });
+                if (!user) {
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                } else {
+                        let update = await User.findByIdAndUpdate(user._id, { $set: req.body }, { new: true, });
+                        return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Server error", status: 500 });
+        }
+};

@@ -67,6 +67,10 @@ var userSchema = new schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "shiftPreference"
         },
+        preferedArea: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "preferedArea"
+        },
         userType: {
             type: String,
             enum: ["USER", "VENDOR", "DRIVER", "ADMIN"],

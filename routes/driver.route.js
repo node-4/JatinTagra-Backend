@@ -25,4 +25,5 @@ module.exports = (app) => {
     app.get("/api/v1/driver/allOrders", [authJwt.verifyToken], auth.getOrders);
     app.put("/api/v1/driver/updateOrderStatus/:id", [authJwt.verifyToken], auth.updateOrderStatus);
     app.get("/api/v1/driver/allPackageOrders", [authJwt.verifyToken], auth.getPackageOrders);
+    app.put("/api/v1/driver/driverUpdate", [authJwt.verifyToken], auth.driverUpdate);
 };
