@@ -14,6 +14,7 @@ const Address = require("../models/AddressModel");
 const bankDetails = require("../models/bankDetails");
 const deliveryOrder = require("../models/orders/deliveryOrder");
 const orderModel = require("../models/orders/orderModel");
+const driverEarning = require("../models/driverEarning");
 
 exports.signInWithPhone = async (req, res) => {
         try {
@@ -153,7 +154,7 @@ exports.updateBankDetails = async (req, res) => {
                 if (!user) {
                         return res.status(404).send({ message: "Data not found", status: 404, data: [] });
                 } else {
-                        const data1 = await bankDetails.findById({ user: user._id });
+                        const data1 = await bankDetails.findOne({ user: user._id });
                         if (data1) {
                                 let obj = {
                                         bankName: req.body.bankName,
@@ -162,7 +163,7 @@ exports.updateBankDetails = async (req, res) => {
                                         ifsc: req.body.ifsc,
                                         user: user._id
                                 }
-                                let update = await bankDetails.findByIdAndUpdate(data1._id, obj, { new: true, });
+                                let update = await bankDetails.findByIdAndUpdate({ _id: data1._id }, { $set: obj }, { new: true, });
                                 return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
                         } else {
                                 let obj = {
@@ -314,6 +315,20 @@ exports.driverUpdate = async (req, res) => {
                 } else {
                         let update = await User.findByIdAndUpdate(user._id, { $set: req.body }, { new: true, });
                         return res.status(200).send({ message: "Data update successfully", status: 200, data: update });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Server error", status: 500 });
+        }
+};
+exports.driverEarning = async (req, res) => {
+        try {
+                let user = await User.findById({ _id: req.user._id });
+                if (!user) {
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                } else {
+                        let update = await driverEarning.findOne({ driverId: user._id }).populate('driverId');
+                        return res.status(200).send({ message: "Data found successfully", status: 200, data: update });
                 }
         } catch (error) {
                 console.error(error);

@@ -21,6 +21,12 @@ const preferedArea = require("../models/preferedArea");
 const shiftTiming = require("../models/shiftTiming");
 const ContactDetail = require("../models/ContactDetail");
 const subscription = require('../models/subscription')
+const orderModel = require("../models/orders/orderModel");
+const userOrder = require("../models/orders/userOrder");
+const deliveryOrder = require("../models/orders/deliveryOrder");
+const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
+const complaint = require("../models/complaint");
+const driverEarning = require("../models/driverEarning");
 exports.registration = async (req, res) => {
     const { phone, email } = req.body;
     try {
@@ -566,6 +572,29 @@ exports.DeletePreferedArea = async (req, res) => {
         return res.status(200).json({ status: 200, message: "Prefered Area delete successfully.", data: {} })
     } catch (err) {
         console.log(err);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.driverOrderAmount = async (req, res) => {
+    try {
+        const findOrders = await deliveryOrder.findById({ _id: req.params.id });
+        if (!findOrders) {
+            return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+        } else {
+            let obj = {
+                driverId: findOrders.driverId,
+                Orders: findOrders._id,
+                amount: req.body.amount,
+            }
+            const saveOrder = await driverEarning.create(obj);
+            if (saveOrder) {
+                const findS = await User.findOne({ _id: findOrders.driverId });
+                const update = await User.findByIdAndUpdate({ _id: findS._id }, { $set: { wallet: findS.wallet + Number(req.body.amount) } }, { new: true });
+                return res.status(200).json({ message: "Order assign successfully.", status: 200, data: saveOrder });
+            }
+        }
+    } catch (error) {
+        console.log(error);
         return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };

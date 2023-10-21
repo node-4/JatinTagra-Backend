@@ -7,11 +7,11 @@ const DocumentSchema = schema({
         },
         Orders: {
                 type: schema.Types.ObjectId,
-                ref: "Order",
+                ref: "deliveryOrder",
         },
         amount: {
                 type: Number,
                 default: 0,
         },
 }, { timestamps: true })
-module.exports = mongoose.model("deliveryOrder", DocumentSchema);
+module.exports = mongoose.model("driverEarning", DocumentSchema);

@@ -22,10 +22,11 @@ module.exports = (app) => {
     app.post("/api/v1/driver/resendOtp/:id", auth.resendOTP);
     app.get("/api/v1/driver/getProfile", [authJwt.verifyToken], auth.getProfile);
     app.post("/api/v1/driver/completeRegistration/:id", auth.completeRegistration);
-    app.post("/api/v1/driver/updateBankDetails/:id", auth.updateBankDetails);
+    app.post("/api/v1/driver/update/BankDetails/:id", auth.updateBankDetails);
     app.post("/api/v1/driver/updateDocument/:id", cpUpload3, auth.updateDocument);
     app.get("/api/v1/driver/allOrders", [authJwt.verifyToken], auth.getOrders);
     app.put("/api/v1/driver/updateOrderStatus/:id", [authJwt.verifyToken], auth.updateOrderStatus);
     app.get("/api/v1/driver/allPackageOrders", [authJwt.verifyToken], auth.getPackageOrders);
     app.put("/api/v1/driver/driverUpdate", [authJwt.verifyToken], auth.driverUpdate);
+    app.get("/api/v1/driver/driverEarning", [authJwt.verifyToken], auth.driverEarning);
 };

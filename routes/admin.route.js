@@ -36,11 +36,9 @@ module.exports = (app) => {
     app.get('/api/v1/subscription/getSubscription', auth.getSubscription);
     app.post("/api/v1/admin/addContactDetails", [authJwt.verifyToken], auth.addContactDetails);
     app.get("/api/v1/admin/viewContactDetails", auth.viewContactDetails);
-
-
     app.post("/api/v1/PreferedArea/AddPreferedArea", [authJwt.verifyToken], auth.AddPreferedArea);
     app.get("/api/v1/PreferedArea/allPreferedArea", auth.getPreferedArea);
     app.get("/api/v1/PreferedArea/getPreferedAreaById/:id", auth.getPreferedAreaById);
     app.delete("/api/v1/PreferedArea/deletePreferedArea/:id", [authJwt.verifyToken], auth.DeletePreferedArea);
-
+    app.put("/api/v1/admin/driverOrderAmount/:id", auth.driverOrderAmount)
 };
