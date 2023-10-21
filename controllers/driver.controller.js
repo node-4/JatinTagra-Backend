@@ -41,8 +41,6 @@ exports.completeRegistration = async (req, res) => {
                         return res.status(404).send({ message: "Data not found", status: 404, data: [] });
                 } else {
                         let data = {
-                                shiftTiming: req.body.shiftTiming,
-                                shiftPreference: req.body.shiftPreference,
                                 firstName: req.body.firstName,
                                 lastName: req.body.lastName,
                                 gender: req.body.gender,
