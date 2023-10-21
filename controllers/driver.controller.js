@@ -48,7 +48,7 @@ exports.completeRegistration = async (req, res) => {
                         };
                         let update = await User.findByIdAndUpdate({ _id: user._id }, { data }, { new: true });
                         if (update) {
-                                const data1 = await Address.findById({ user: user._id });
+                                const data1 = await Address.findOne({ user: user._id });
                                 if (data1) {
                                         let obj = {
                                                 address: req.body.address,
