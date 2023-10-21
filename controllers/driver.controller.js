@@ -335,18 +335,30 @@ exports.driverEarning = async (req, res) => {
                         startOfDay.setHours(0, 0, 0, 0);
                         const endOfDay = new Date(today);
                         endOfDay.setHours(23, 59, 59, 999);
-                        const weeklyEarnings = await driverEarning.find({ driverId: user._id, createdAt: { $gte: startOfWeek, $lte: today } });
-                        const todayEarnings = await driverEarning.find({ driverId: user._id, createdAt: { $gte: startOfDay, $lte: endOfDay } });
-                        const weeklyTotal = weeklyEarnings.reduce((total, earning) => total + earning.amount, 0);
-                        const todayTotal = todayEarnings.reduce((total, earning) => total + earning.amount, 0);
-                        return res.status(200).send({
-                                message: "Data found successfully", status: 200, wallet: user.wallet, floatingCash: user.floatingCash,
-                                // weeklyData: weeklyEarnings, todayData: todayEarnings,
-                                weeklyTotal: weeklyTotal, todayTotal: todayTotal
+                        const lastWeekStart = new Date(startOfWeek);
+                        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                        const lastWeekEnd = new Date(startOfWeek);
+                        lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
+                        const lastWeekEarnings = await driverEarning.find({
+                                driverId: user._id,
+                                createdAt: { $gte: lastWeekStart, $lte: lastWeekEnd }
                         });
+                        const currentWeekEarnings = await driverEarning.find({
+                                driverId: user._id,
+                                createdAt: { $gte: startOfWeek, $lte: today }
+                        });
+                        const lastWeekTotal = lastWeekEarnings.reduce((total, earning) => total + earning.amount, 0);
+                        const currentWeekTotal = currentWeekEarnings.reduce((total, earning) => total + earning.amount, 0);
+                        const todayEarnings = await driverEarning.find({ driverId: user._id, createdAt: { $gte: startOfDay, $lte: endOfDay } });
+                        const todayTotal = todayEarnings.reduce((total, earning) => total + earning.amount, 0);
+                        const orderEarning = currentWeekTotal;
+                        const incentive = 10;
+                        return res.status(200).send({ message: "Data found successfully", status: 200, wallet: user.wallet, floatingCash: user.floatingCash, weeklyTotal: currentWeekTotal, orderEarning: orderEarning, incentive: incentive, todayTotal: todayTotal, lastWeekTotal: lastWeekTotal });
                 }
         } catch (error) {
                 console.error(error);
                 return res.status(500).json({ message: "Server error", status: 500 });
         }
 }
+
+
