@@ -137,7 +137,7 @@ exports.resendOTP = async (req, res) => {
 };
 exports.getProfile = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user.id, });
+                const data = await User.findOne({ _id: req.user.id, }).populate('shiftTiming shiftPreference preferedArea');
                 if (data) {
                         return res.status(200).json({ status: 200, message: "get Profile", data: data });
                 } else {
