@@ -30,6 +30,8 @@ module.exports = (app) => {
     app.put("/api/v1/driver/driverUpdate", [authJwt.verifyToken], auth.driverUpdate);
     app.get("/api/v1/driver/driverEarning", [authJwt.verifyToken], auth.driverEarning);
     app.get("/api/v1/driver/driverweeklyEarning", [authJwt.verifyToken], auth.driverweeklyEarning);
+    app.get("/api/v1/driver/driverweeklybonusEarning", [authJwt.verifyToken], auth.driverweeklybonusEarning);
+    app.get("/api/v1/driver/driverweeklyorderEarning", [authJwt.verifyToken], auth.driverweeklyorderEarning);
     app.get("/api/v1/driver/todayOrderEarnings", [authJwt.verifyToken], auth.todayOrderEarnings);
     app.get("/api/v1/driver/driverEarningandincentive", [authJwt.verifyToken], auth.driverEarningandincentive);
 };
