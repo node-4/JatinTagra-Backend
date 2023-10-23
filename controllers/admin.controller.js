@@ -598,3 +598,150 @@ exports.driverOrderAmount = async (req, res) => {
         return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
+exports.getOrders = async (req, res, next) => {
+    try {
+        const orders = await orderModel.find({ orderStatus: "confirmed", });
+        if (orders.length == 0) {
+            return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+        }
+        return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+    } catch (error) {
+        console.log(error);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getcancelReturnOrder = async (req, res, next) => {
+    try {
+        const orders = await cancelReturnOrder.find({}).populate('Orders');
+        if (orders.length == 0) {
+            return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+        }
+        return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+    } catch (error) {
+        console.log(error);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getAllUser = async (req, res) => {
+    try {
+        const user = await User.find({ userType: "USER" });
+        if (user.length == 0) {
+            return res.status(404).send({ message: "not found" });
+        }
+        return res.status(200).send({ message: "Get user details.", data: user });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({
+            message: "internal server error " + err.message,
+        });
+    }
+};
+exports.getAllDriver = async (req, res) => {
+    try {
+        const user = await User.find({ userType: "DRIVER" });
+        if (user.length == 0) {
+            return res.status(404).send({ message: "not found" });
+        }
+        return res.status(200).send({ message: "Get user details.", data: user });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({
+            message: "internal server error " + err.message,
+        });
+    }
+};
+exports.getAllVendor = async (req, res) => {
+    try {
+        const user = await User.find({ userType: "VENDOR" });
+        if (user.length == 0) {
+            return res.status(404).send({ message: "not found" });
+        }
+        return res.status(200).send({ message: "Get user details.", data: user });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({
+            message: "internal server error " + err.message,
+        });
+    }
+};
+exports.viewUser = async (req, res) => {
+    try {
+        const data = await User.findById(req.params.id);
+        if (!data) {
+            return res.status(400).send({ msg: "not found" });
+        }
+        return res.status(200).send({ msg: "Data found successfully", data: data });
+    } catch (err) {
+        console.log(err.message);
+        return res.status(500).send({ msg: "internal server error", error: err.message, });
+    }
+};
+exports.deleteUser = async (req, res) => {
+    try {
+        const data = await User.findByIdAndDelete(req.params.id);
+        if (!data) {
+            return res.status(400).send({ msg: "not found" });
+        }
+        return res.status(200).send({ msg: "deleted", data: data });
+    } catch (err) {
+        console.log(err.message);
+        return res.status(500).send({ msg: "internal server error", error: err.message, });
+    }
+};
+exports.getComplaint = async (req, res, next) => {
+    try {
+        const orders = await complaint.find({}).populate('userId vendorId Orders Orders.$.productId')
+        if (orders.length == 0) {
+            return res.status(404).json({ status: 404, message: "Complain not found", data: {} });
+        }
+        return res.status(200).json({ status: 200, msg: "complain found", data: orders })
+    } catch (error) {
+        console.log(error);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.allTransactionUser = async (req, res) => {
+    try {
+        const data = await transaction.find({}).populate("user orderId");
+        if (data.length == 0) {
+            return res.status(404).json({ status: 404, message: "Transaction not found", data: {} });
+        }
+        return res.status(200).json({ status: 200, data: data });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+};
+exports.getdeliveryOrders = async (req, res, next) => {
+    try {
+        const orders = await deliveryOrder.find({}).populate('Orders userId driverId');
+        if (orders.length == 0) {
+            return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+        }
+        return res.status(200).json({ status: 200, msg: "orders of user", data: orders })
+    } catch (error) {
+        console.log(error);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.getProducts = async (req, res) => {
+    try {
+        if (req.query.category) {
+            const product = await Product.find({ vendorId: req.user._id, category: req.query.category }).populate('vendorId category subcategory');
+            if (product.length == 0) {
+                return res.status(404).json({ message: "No data found", data: {} });
+            } else {
+                return res.status(200).json({ message: "Product data found.", status: 200, data: product });
+            }
+        } else {
+            const product = await Product.find({}).populate('vendorId category subcategory');
+            if (product.length == 0) {
+                return res.status(404).json({ message: "No data found", data: {} });
+            } else {
+                return res.status(200).json({ message: "Product data found.", status: 200, data: product });
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(501).send({ message: "server error.", data: {}, });
+    }
+};

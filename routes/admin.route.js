@@ -41,4 +41,15 @@ module.exports = (app) => {
     app.get("/api/v1/PreferedArea/getPreferedAreaById/:id", auth.getPreferedAreaById);
     app.delete("/api/v1/PreferedArea/deletePreferedArea/:id", [authJwt.verifyToken], auth.DeletePreferedArea);
     app.put("/api/v1/admin/driverOrderAmount/:id", auth.driverOrderAmount)
+    app.get("/api/v1/admin/allOrders", [authJwt.verifyToken], auth.getOrders);
+    app.get("/api/v1/admin/alldeliveryOrders", [authJwt.verifyToken], auth.getdeliveryOrders);
+    app.get("/api/v1/admin/getcancelReturnOrder", [authJwt.verifyToken], auth.getcancelReturnOrder);
+    app.get("/api/v1/admin/allComplaint", [authJwt.verifyToken], auth.getComplaint);
+    app.get("/api/v1/admin/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
+    app.get("/api/v1/admin/allProducts", auth.getProducts);
+    app.get("/api/v1/admin/getAllUser", auth.getAllUser);
+    app.get("/api/v1/admin/getAllDriver", auth.getAllDriver);
+    app.get("/api/v1/admin/getAllVendor", auth.getAllVendor);
+    app.get("/api/v1/admin/viewUser/:id", auth.viewUser);
+    app.delete("/api/v1/admin/deleteUser/:id", [authJwt.verifyToken], auth.deleteUser);
 };

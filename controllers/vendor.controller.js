@@ -840,7 +840,6 @@ exports.getMetric = async (req, res, next) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
-
 exports.getAllDriver = async (req, res) => {
         try {
                 const vendor = await User.find({ userType: "DRIVER" });
