@@ -41,6 +41,7 @@ module.exports = (app) => {
     app.get("/api/v1/PreferedArea/getPreferedAreaById/:id", auth.getPreferedAreaById);
     app.delete("/api/v1/PreferedArea/deletePreferedArea/:id", [authJwt.verifyToken], auth.DeletePreferedArea);
     app.put("/api/v1/admin/driverOrderAmount/:id", auth.driverOrderAmount)
+    app.put("/api/v1/admin/driverbonusOrderAmount/:id", auth.driverbonusOrderAmount)
     app.get("/api/v1/admin/allOrders", [authJwt.verifyToken], auth.getOrders);
     app.get("/api/v1/admin/alldeliveryOrders", [authJwt.verifyToken], auth.getdeliveryOrders);
     app.get("/api/v1/admin/getcancelReturnOrder", [authJwt.verifyToken], auth.getcancelReturnOrder);

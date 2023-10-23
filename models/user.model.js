@@ -104,6 +104,10 @@ var userSchema = new schema(
             type: Number,
             default: 0,
         },
+        bonus: {
+            type: Number,
+            default: 0,
+        },
         floatingCash: {
             type: Number,
             default: 0,

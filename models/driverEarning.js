@@ -9,6 +9,10 @@ const DocumentSchema = schema({
                 type: schema.Types.ObjectId,
                 ref: "deliveryOrder",
         },
+        type: {
+                type: String,
+                enum: ["order", "bonus"],
+        },
         amount: {
                 type: Number,
                 default: 0,

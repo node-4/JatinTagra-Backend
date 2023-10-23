@@ -585,11 +585,36 @@ exports.driverOrderAmount = async (req, res) => {
                 driverId: findOrders.driverId,
                 Orders: findOrders._id,
                 amount: req.body.amount,
+                type: "order"
             }
             const saveOrder = await driverEarning.create(obj);
             if (saveOrder) {
                 const findS = await User.findOne({ _id: findOrders.driverId });
                 const update = await User.findByIdAndUpdate({ _id: findS._id }, { $set: { wallet: findS.wallet + Number(req.body.amount) } }, { new: true });
+                return res.status(200).json({ message: "Order assign successfully.", status: 200, data: saveOrder });
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.driverbonusOrderAmount = async (req, res) => {
+    try {
+        const findOrders = await deliveryOrder.findById({ _id: req.params.id });
+        if (!findOrders) {
+            return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+        } else {
+            let obj = {
+                driverId: findOrders.driverId,
+                Orders: findOrders._id,
+                amount: req.body.amount,
+                type: "bonus"
+            }
+            const saveOrder = await driverEarning.create(obj);
+            if (saveOrder) {
+                const findS = await User.findOne({ _id: findOrders.driverId });
+                const update = await User.findByIdAndUpdate({ _id: findS._id }, { $set: { wallet: findS.wallet + Number(req.body.amount), bonus: findS.bonus + Number(req.body.amount), } }, { new: true });
                 return res.status(200).json({ message: "Order assign successfully.", status: 200, data: saveOrder });
             }
         }

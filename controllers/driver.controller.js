@@ -341,15 +341,17 @@ exports.driverEarning = async (req, res) => {
                         lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
                         const lastWeekEarnings = await driverEarning.find({
                                 driverId: user._id,
+                                type: "order",
                                 createdAt: { $gte: lastWeekStart, $lte: lastWeekEnd }
                         });
                         const currentWeekEarnings = await driverEarning.find({
                                 driverId: user._id,
+                                type: "order",
                                 createdAt: { $gte: startOfWeek, $lte: today }
                         });
                         const lastWeekTotal = lastWeekEarnings.reduce((total, earning) => total + earning.amount, 0);
                         const currentWeekTotal = currentWeekEarnings.reduce((total, earning) => total + earning.amount, 0);
-                        const todayEarnings = await driverEarning.find({ driverId: user._id, createdAt: { $gte: startOfDay, $lte: endOfDay } });
+                        const todayEarnings = await driverEarning.find({ driverId: user._id, type: "order", createdAt: { $gte: startOfDay, $lte: endOfDay } });
                         const todayTotal = todayEarnings.reduce((total, earning) => total + earning.amount, 0);
                         const orderEarning = currentWeekTotal;
                         const incentive = 10;
@@ -360,5 +362,95 @@ exports.driverEarning = async (req, res) => {
                 return res.status(500).json({ message: "Server error", status: 500 });
         }
 }
+exports.driverweeklyEarning = async (req, res) => {
+        try {
+                const user = await User.findById({ _id: req.user._id });
+                if (!user) {
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                } else {
+                        const today = new Date();
+                        const startOfWeek = new Date(today);
+                        startOfWeek.setDate(startOfWeek.getDate() - 6);
+                        startOfWeek.setHours(0, 0, 0, 0);
+                        const startOfDay = new Date(today);
+                        startOfDay.setHours(0, 0, 0, 0);
+                        const endOfDay = new Date(today);
+                        endOfDay.setHours(23, 59, 59, 999);
 
+                        const lastWeekStart = new Date(startOfWeek);
+                        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+                        const lastWeekEnd = new Date(startOfWeek);
+                        lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
 
+                        const currentWeekEarnings = await driverEarning.find({
+                                driverId: user._id,
+                                createdAt: { $gte: startOfWeek, $lte: today }
+                        });
+
+                        const currentWeekTotal = currentWeekEarnings.reduce((total, earning) => total + earning.amount, 0);
+
+                        return res.status(200).send({
+                                message: "Data found successfully",
+                                status: 200,
+                                weekly: currentWeekEarnings,
+                                currentWeekTotal: currentWeekTotal,
+                                startDate: startOfWeek,
+                                endDate: today
+                        });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Server error", status: 500 });
+        }
+};
+exports.todayOrderEarnings = async (req, res) => {
+        try {
+                const user = await User.findById({ _id: req.user._id });
+                if (!user) {
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                } else {
+                        const today = new Date();
+                        const startOfDay = new Date(today);
+                        startOfDay.setHours(0, 0, 0, 0);
+                        const endOfDay = new Date(today);
+                        endOfDay.setHours(23, 59, 59, 999);
+                        const earnings = await driverEarning.aggregate([
+                                {
+                                        $match: {
+                                                driverId: user._id,
+                                                type: { $in: ["order", "bonus"] },
+                                                createdAt: { $gte: startOfDay, $lte: endOfDay }
+                                        }
+                                },
+                                {
+                                        $group: {
+                                                _id: "$driverId",
+                                                totalEarnings: { $sum: "$amount" }
+                                        }
+                                }
+                        ]);
+                        return res.status(200).send({
+                                message: "Today's earnings for the single order retrieved successfully",
+                                status: 200,
+                                earnings: earnings
+                        });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Server error", status: 500 });
+        }
+};
+exports.driverEarningandincentive = async (req, res) => {
+        try {
+                const user = await User.findById({ _id: req.user._id });
+                if (!user) {
+                        return res.status(404).send({ message: "Data not found", status: 404, data: [] });
+                } else {
+                        const todayEarnings = await driverEarning.find({ driverId: user._id });
+                        return res.status(200).send({ message: "Data found successfully", status: 200, data: todayEarnings });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: "Server error", status: 500 });
+        }
+}
