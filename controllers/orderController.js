@@ -20,6 +20,8 @@ const orderModel = require("../models/orders/orderModel");
 const userOrder = require("../models/orders/userOrder");
 const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 const complaint = require("../models/complaint");
+const Notification = require('../models/notificationModel');
+
 
 exports.getCart = async (req, res) => {
         try {
@@ -509,39 +511,109 @@ exports.checkout = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+// exports.placeOrder = async (req, res) => {
+//         try {
+//                 let findUserOrder = await userOrder.findOne({ orderId: req.params.orderId });
+//                 if (findUserOrder) {
+//                         if (req.body.paymentStatus == "paid") {
+//                                 let update = await userOrder.findByIdAndUpdate({ _id: findUserOrder._id }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
+//                                 if (update) {
+//                                         for (let i = 0; i < update.Orders.length; i++) {
+//                                                 let update1 = await orderModel.findByIdAndUpdate({ _id: update.Orders[i]._id }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
+//                                         }
+//                                         let obj = {
+//                                                 user: req.user._id,
+//                                                 orderId: findUserOrder._id,
+//                                                 date: Date.now(),
+//                                                 amount: findUserOrder.paidAmount,
+//                                                 type: "Debit",
+//                                         };
+//                                         const data1 = await transaction.create(obj);
+//                                         const welcomeMessage = `Welcome, ${userCreate.fullName}! Thank you for registering.`;
+//                                         const welcomeNotification = new Notification({
+//                                                 recipient: userCreate._id,
+//                                                 content: welcomeMessage,
+//                                                 type: 'welcome',
+//                                         });
+//                                         await welcomeNotification.save();
+//                                         return res.status(200).json({ message: "Payment success.", status: 200, data: update });
+//                                 }
+//                         }
+//                         if (req.body.paymentStatus == "failed") {
+//                                 return res.status(201).json({ message: "Payment failed.", status: 201, orderId: findUserOrder });
+//                         }
+
+//                 } else {
+//                         return res.status(404).json({ message: "No data found", data: {} });
+//                 }
+//         } catch (error) {
+//                 console.log(error);
+//                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+//         }
+// };
 exports.placeOrder = async (req, res) => {
         try {
-                let findUserOrder = await userOrder.findOne({ orderId: req.params.orderId });
+                const findUserOrder = await userOrder.findOne({ orderId: req.params.orderId });
+
                 if (findUserOrder) {
-                        if (req.body.paymentStatus == "paid") {
-                                let update = await userOrder.findByIdAndUpdate({ _id: findUserOrder._id }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
-                                if (update) {
-                                        for (let i = 0; i < update.Orders.length; i++) {
-                                                let update1 = await orderModel.findByIdAndUpdate({ _id: update.Orders[i]._id }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
-                                        }
-                                        let obj = {
-                                                user: req.user._id,
-                                                orderId: findUserOrder._id,
-                                                date: Date.now(),
-                                                amount: findUserOrder.paidAmount,
-                                                type: "Debit",
-                                        };
-                                        const data1 = await transaction.create(obj);
-                                        return res.status(200).json({ message: "Payment success.", status: 200, data: update });
+                        if (req.body.paymentStatus === "paid") {
+                                const update = await userOrder.findByIdAndUpdate(
+                                        { _id: findUserOrder._id },
+                                        { $set: { orderStatus: "confirmed", paymentStatus: "paid" } },
+                                        { new: true }
+                                );
+
+                                for (let i = 0; i < update.Orders.length; i++) {
+                                        await orderModel.findByIdAndUpdate(
+                                                { _id: update.Orders[i]._id },
+                                                { $set: { orderStatus: "confirmed", paymentStatus: "paid" } },
+                                                { new: true }
+                                        );
                                 }
-                        }
-                        if (req.body.paymentStatus == "failed") {
-                                return res.status(201).json({ message: "Payment failed.", status: 201, orderId: findUserOrder });
+
+                                const transactionData = {
+                                        user: req.user._id,
+                                        orderId: findUserOrder._id,
+                                        date: Date.now(),
+                                        amount: findUserOrder.paidAmount,
+                                        type: "Debit",
+                                };
+
+                                const createdTransaction = await transaction.create(transactionData);
+
+                                const welcomeMessage = `Welcome, Your OrdrId is this: ${findUserOrder._id}! Your payment was successful.`;
+                                const welcomeNotification = new Notification({
+                                        recipient: req.user._id,
+                                        content: welcomeMessage,
+                                        type: 'welcome',
+                                });
+
+                                await welcomeNotification.save();
+
+                                return res.status(200).json({
+                                        status: 200,
+                                        message: "Payment success.",
+                                        data: update,
+                                });
                         }
 
+                        if (req.body.paymentStatus === "failed") {
+                                return res.status(201).json({
+                                        status: 201,
+                                        message: "Payment failed.",
+                                        orderId: findUserOrder,
+                                });
+                        }
                 } else {
-                        return res.status(404).json({ message: "No data found", data: {} });
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
                 }
         } catch (error) {
                 console.log(error);
-                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(500).send({ status: 500, message: "Server error.", data: {} });
         }
 };
+
+
 exports.cancelReturnOrder = async (req, res, next) => {
         try {
                 const orders = await orderModel.findById({ _id: req.params.id });

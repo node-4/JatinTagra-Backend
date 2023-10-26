@@ -15,6 +15,8 @@ const Address = require("../models/AddressModel");
 const userCard = require("../models/userCard");
 const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
+const Notification = require('../models/notificationModel');
+
 exports.registration = async (req, res) => {
         const { phone, email } = req.body;
         try {
@@ -24,6 +26,15 @@ exports.registration = async (req, res) => {
                         req.body.password = bcrypt.hashSync(req.body.password, 8);
                         req.body.userType = "USER";
                         const userCreate = await User.create(req.body);
+
+                        const welcomeMessage = `Welcome, ${userCreate.fullName}! Thank you for registering.`;
+                        const welcomeNotification = new Notification({
+                                recipient: userCreate._id,
+                                content: welcomeMessage,
+                                type: 'welcome',
+                        });
+                        await welcomeNotification.save();
+
                         return res.status(200).send({ status: 200, message: "registered successfully ", data: userCreate, });
                 } else {
                         return res.status(409).send({ status: 409, message: "Already Exist", data: [] });
@@ -367,57 +378,172 @@ exports.getProductReviews = async (req, res, next) => {
         }
         return res.status(200).json({ status: 200, reviews: product.reviews, });
 };
+// exports.addMoney = async (req, res) => {
+//         try {
+//                 const data = await User.findOne({ _id: req.user._id, });
+//                 if (data) {
+//                         let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet + parseInt(req.body.balance) } }, { new: true });
+//                         if (update) {
+//                                 let obj = {
+//                                         user: req.user._id,
+//                                         date: Date.now(),
+//                                         amount: req.body.balance,
+//                                         type: "Credit",
+//                                 };
+//                                 const data1 = await transaction.create(obj);
+//                                 const welcomeMessage = `Welcome, ${userCreate.fullName}! Thank you for registering.`;
+//                                 const welcomeNotification = new Notification({
+//                                         recipient: userCreate._id,
+//                                         content: welcomeMessage,
+//                                         type: 'welcome',
+//                                 });
+//                                 await welcomeNotification.save();
+//                                 if (data1) {
+//                                         return res.status(200).json({ status: 200, message: "Money has been added.", data: update, });
+//                                 }
+
+//                         }
+//                 } else {
+//                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
+//                 }
+//         } catch (error) {
+//                 console.log(error);
+//                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+//         }
+// };
+
+
 exports.addMoney = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user._id, });
-                if (data) {
-                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet + parseInt(req.body.balance) } }, { new: true });
-                        if (update) {
-                                let obj = {
-                                        user: req.user._id,
-                                        date: Date.now(),
-                                        amount: req.body.balance,
-                                        type: "Credit",
-                                };
-                                const data1 = await transaction.create(obj);
-                                if (data1) {
-                                        return res.status(200).json({ status: 200, message: "Money has been added.", data: update, });
-                                }
+                const updatedUser = await User.findByIdAndUpdate(
+                        { _id: req.user._id },
+                        { $inc: { wallet: parseInt(req.body.balance) } },
+                        { new: true }
+                );
 
-                        }
+                if (updatedUser) {
+                        const transactionData = {
+                                user: req.user._id,
+                                date: Date.now(),
+                                amount: req.body.balance,
+                                type: "Credit",
+                        };
+
+                        const createdTransaction = await transaction.create(transactionData);
+
+                        const welcomeMessage = `Welcome, ${updatedUser.fullName}! Thank you for adding money to your wallet.`;
+                        const welcomeNotification = new Notification({
+                                recipient: updatedUser._id,
+                                content: welcomeMessage,
+                                type: 'welcome',
+                        });
+
+                        await welcomeNotification.save();
+
+                        return res.status(200).json({
+                                status: 200,
+                                message: "Money has been added.",
+                                data: updatedUser,
+                        });
                 } else {
-                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                        return res.status(404).json({
+                                status: 404,
+                                message: "No data found",
+                                data: {},
+                        });
                 }
         } catch (error) {
                 console.log(error);
-                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(500).send({
+                        status: 500,
+                        message: "Server error.",
+                        data: {},
+                });
         }
 };
+
+// exports.removeMoney = async (req, res) => {
+//         try {
+//                 const data = await User.findOne({ _id: req.user._id, });
+//                 if (data) {
+//                         let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet - parseInt(req.body.balance) } }, { new: true });
+//                         if (update) {
+//                                 let obj = {
+//                                         user: req.user._id,
+//                                         date: Date.now(),
+//                                         amount: req.body.balance,
+//                                         type: "Debit",
+//                                 };
+//                                 const data1 = await transaction.create(obj);
+//                                 const welcomeMessage = `Welcome, ${userCreate.fullName}! Thank you for registering.`;
+//                                 const welcomeNotification = new Notification({
+//                                         recipient: userCreate._id,
+//                                         content: welcomeMessage,
+//                                         type: 'welcome',
+//                                 });
+//                                 await welcomeNotification.save();
+//                                 if (data1) {
+//                                         return res.status(200).json({ status: 200, message: "Money has been deducted.", data: update, });
+//                                 }
+//                         }
+//                 } else {
+//                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
+//                 }
+//         } catch (error) {
+//                 console.log(error);
+//                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+//         }
+// };
+
 exports.removeMoney = async (req, res) => {
         try {
-                const data = await User.findOne({ _id: req.user._id, });
-                if (data) {
-                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet - parseInt(req.body.balance) } }, { new: true });
-                        if (update) {
-                                let obj = {
-                                        user: req.user._id,
-                                        date: Date.now(),
-                                        amount: req.body.balance,
-                                        type: "Debit",
-                                };
-                                const data1 = await transaction.create(obj);
-                                if (data1) {
-                                        return res.status(200).json({ status: 200, message: "Money has been deducted.", data: update, });
-                                }
-                        }
+                const updatedUser = await User.findByIdAndUpdate(
+                        { _id: req.user._id },
+                        { $inc: { wallet: -parseInt(req.body.balance) } },
+                        { new: true }
+                );
+
+                if (updatedUser) {
+                        const transactionData = {
+                                user: req.user._id,
+                                date: Date.now(),
+                                amount: req.body.balance,
+                                type: "Debit",
+                        };
+
+                        const createdTransaction = await transaction.create(transactionData);
+
+                        const welcomeMessage = `Welcome, ${updatedUser.fullName}! Money has been deducted from your wallet.`;
+                        const welcomeNotification = new Notification({
+                                recipient: updatedUser._id,
+                                content: welcomeMessage,
+                                type: 'welcome',
+                        });
+
+                        await welcomeNotification.save();
+
+                        return res.status(200).json({
+                                status: 200,
+                                message: "Money has been deducted.",
+                                data: updatedUser,
+                        });
                 } else {
-                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                        return res.status(404).json({
+                                status: 404,
+                                message: "No data found",
+                                data: {},
+                        });
                 }
         } catch (error) {
                 console.log(error);
-                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+                return res.status(500).send({
+                        status: 500,
+                        message: "Server error.",
+                        data: {},
+                });
         }
 };
+
 exports.getWallet = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user._id, });
@@ -712,5 +838,59 @@ exports.updateLocation = async (req, res) => {
         } catch (error) {
                 console.error(error);
                 return res.status(500).send({ status: 500, message: "Server error" + error.message });
+        }
+};
+
+
+
+exports.createNotification = async (req, res) => {
+        try {
+                const { recipient, content } = req.body;
+
+                const notification = new Notification({ recipient, content });
+                await notification.save();
+
+                return res.status(201).json({ status: 201, message: 'Notification created successfully', data: notification });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: 'Error creating notification', error: error.message });
+        }
+};
+
+
+exports.markNotificationAsRead = async (req, res) => {
+        try {
+                const notificationId = req.params.notificationId;
+
+                const notification = await Notification.findByIdAndUpdate(
+                        notificationId,
+                        { status: 'read' },
+                        { new: true }
+                );
+
+                if (!notification) {
+                        return res.status(404).json({ status: 404, message: 'Notification not found' });
+                }
+
+                return res.status(200).json({ status: 200, message: 'Notification marked as read', data: notification });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: 'Error marking notification as read', error: error.message });
+        }
+};
+
+
+exports.getNotificationsForUser = async (req, res) => {
+        try {
+                const userId = req.params.userId;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const notifications = await Notification.find({ recipient: userId });
+
+                return res.status(200).json({ status: 200, message: 'Notifications retrieved successfully', data: notifications });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: 'Error retrieving notifications', error: error.message });
         }
 };
