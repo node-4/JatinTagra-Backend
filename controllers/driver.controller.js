@@ -15,6 +15,8 @@ const bankDetails = require("../models/bankDetails");
 const deliveryOrder = require("../models/orders/deliveryOrder");
 const orderModel = require("../models/orders/orderModel");
 const driverEarning = require("../models/driverEarning");
+const DutyTracking = require('../models/DutyTracking');
+
 
 exports.signInWithPhone = async (req, res) => {
         try {
@@ -276,6 +278,35 @@ exports.getOrders = async (req, res, next) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+
+
+exports.getOrderById = async (req, res, next) => {
+        try {
+                const orderId = req.params.id;
+                const order = await deliveryOrder.findById(orderId)
+                        .populate('userId')
+                        .populate('driverId')
+                        .populate({
+                                path: 'Orders', populate: [
+                                        { path: 'userId' },
+                                        { path: 'vendorId' },
+                                        { path: 'category' },
+                                        { path: 'discountId' },
+                                        { path: 'productId' },
+                                ]
+                        })
+                if (!order) {
+                        return res.status(404).json({ status: 404, message: "Order not found", data: {} });
+                }
+
+                return res.status(200).json({ status: 200, message: "Order found", data: order });
+        } catch (error) {
+                console.log(error);
+                return res.status(500).send({ status: 500, message: "Server error", data: {} });
+        }
+};
+
+
 exports.getPackageOrders = async (req, res, next) => {
         try {
                 const orders = await deliveryOrder.find({ driverId: req.user._id, orderType: "Package" }).populate('Orders userId');
@@ -307,6 +338,40 @@ exports.updateOrderStatus = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+exports.acceptOrRejectOrderStatus = async (req, res) => {
+        try {
+                const orderId = req.params.id;
+                const { OrderStatus } = req.body;
+
+                const order = await deliveryOrder.findById(orderId);
+
+                if (!order) {
+                        return res.status(404).json({ status: 404, message: "Order not found", data: {} });
+                }
+
+                if (OrderStatus === "ACCEPT") {
+                        const updatedOrder = await deliveryOrder.findByIdAndUpdate(
+                                orderId,
+                                { $set: { OrderStatus: "ACCEPT" } },
+                                { new: true }
+                        );
+
+                        if (updatedOrder) {
+                                return res.status(200).json({ status: 200, message: "Order status changed to ACCEPT.", data: updatedOrder });
+                        }
+                } else if (OrderStatus === "REJECT") {
+                        await deliveryOrder.findByIdAndDelete(orderId);
+
+                        return res.status(200).json({ status: 200, message: "Order deleted.", data: {} });
+                } else {
+                        return res.status(400).json({ status: 400, message: "Invalid delivery status provided", data: {} });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(500).json({ status: 500, message: "Server error.", data: {} });
+        }
+};
+
 exports.driverUpdate = async (req, res) => {
         try {
                 let user = await User.findById({ _id: req.user._id });
@@ -550,5 +615,88 @@ exports.driverEarningandincentive = async (req, res) => {
         } catch (error) {
                 console.error(error);
                 return res.status(500).json({ message: "Server error", status: 500 });
+        }
+};
+
+
+exports.createDutyTracking = async (req, res) => {
+        try {
+                const { driverId, startTime, endTime } = req.body;
+
+                let fileUrl;
+                if (req.file) {
+                        fileUrl = req.file ? req.file.path : "";
+                }
+
+                const newDutyTracking = new DutyTracking({
+                        driverId,
+                        startTime,
+                        endTime,
+                        image: fileUrl,
+                });
+
+                await newDutyTracking.save();
+
+                return res.status(201).json({ status: 201, data: newDutyTracking });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, message: 'Server error' });
+        }
+};
+
+
+exports.getAllDutyTracking = async (req, res) => {
+        try {
+                const dutyTrackingRecords = await DutyTracking.find();
+                return res.status(200).json({ status: 200, data: dutyTrackingRecords });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, message: 'Server error' });
+        }
+};
+
+
+exports.getDutyTrackingById = async (req, res) => {
+        try {
+                const dutyTrackingRecord = await DutyTracking.findById(req.params.id);
+                if (!dutyTrackingRecord) {
+                        return res.status(404).json({ status: 404, message: 'Duty tracking record not found' });
+                }
+                return res.status(200).json({ status: 200, data: dutyTrackingRecord });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, message: 'Server error' });
+        }
+};
+
+
+exports.updateDutyTracking = async (req, res) => {
+        try {
+                const updatedRecord = await DutyTracking.findByIdAndUpdate(
+                        req.params.id,
+                        req.body,
+                        { new: true }
+                );
+                if (!updatedRecord) {
+                        return res.status(404).json({ message: 'Duty tracking record not found' });
+                }
+                return res.status(200).json(updatedRecord);
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: 'Server error' });
+        }
+};
+
+
+exports.deleteDutyTracking = async (req, res) => {
+        try {
+                const deletedRecord = await DutyTracking.findByIdAndDelete(req.params.id);
+                if (!deletedRecord) {
+                        return res.status(404).json({ message: 'Duty tracking record not found' });
+                }
+                return res.status(204).end();
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: 'Server error' });
         }
 };

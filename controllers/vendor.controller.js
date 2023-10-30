@@ -710,6 +710,7 @@ exports.assignOrder = async (req, res) => {
                                                 date: fullDate,
                                                 Orders: findOrders._id,
                                                 deliveryStatus: "assigned",
+                                                OrderStatus: 'PENDING'
                                         }
                                         const saveOrder = await deliveryOrder.create(obj);
                                         if (saveOrder) {
