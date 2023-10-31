@@ -772,20 +772,21 @@ exports.getProducts = async (req, res) => {
     }
 };
 exports.verifyAdminStatus = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await User.findById(userId);
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        const { isAdminVerify } = req.body
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.isAdminVerify = isAdminVerify;;
+        await user.save();
+
+        return res.status(200).json({ success: true, message: 'Admin status verified' });
+    } catch (error) {
+        console.error('Error verifying admin status:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
-
-    user.isAdminVerify = true;
-    await user.save();
-
-    return res.status(200).json({ success: true, message: 'Admin status verified' });
-  } catch (error) {
-    console.error('Error verifying admin status:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
 };
