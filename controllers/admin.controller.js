@@ -71,6 +71,26 @@ exports.signin = async (req, res) => {
         return res.status(500).send({ message: "Server error" + error.message });
     }
 };
+
+exports.resetPassword = async (req, res) => {
+    const { id } = req.params;
+    try {
+            const user = await User.findOne({ _id: id, userType: "ADMIN" });
+            if (!user) {
+                    return res.status(404).send({ status: 404, message: "User not found" });
+            }
+            if (req.body.newPassword == req.body.confirmPassword) {
+                    const updated = await User.findOneAndUpdate({ _id: user._id }, { $set: { password: bcrypt.hashSync(req.body.newPassword) } }, { new: true });
+                    return res.status(200).send({ status: 200, message: "Password update successfully.", data: updated, });
+            } else {
+                    return res.status(501).send({ status: 501, message: "Password Not matched.", data: {}, });
+            }
+    } catch (error) {
+            console.error(error);
+            return res.status(500).send({ status: 500, message: "Server error" + error.message });
+    }
+};
+
 exports.update = async (req, res) => {
     try {
         const { fullName, firstName, lastName, email, phone, password } = req.body;
