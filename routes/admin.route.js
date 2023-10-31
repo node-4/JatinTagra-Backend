@@ -53,4 +53,6 @@ module.exports = (app) => {
     app.get("/api/v1/admin/getAllVendor", auth.getAllVendor);
     app.get("/api/v1/admin/viewUser/:id", auth.viewUser);
     app.delete("/api/v1/admin/deleteUser/:id", [authJwt.verifyToken], auth.deleteUser);
+    app.put('/api/v1/admin/user/verify-admin/:userId', [authJwt.verifyToken], auth.verifyAdminStatus);
+
 };

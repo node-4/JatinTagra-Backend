@@ -771,3 +771,21 @@ exports.getProducts = async (req, res) => {
         return res.status(501).send({ message: "server error.", data: {}, });
     }
 };
+exports.verifyAdminStatus = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.isAdminVerify = true;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'Admin status verified' });
+  } catch (error) {
+    console.error('Error verifying admin status:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

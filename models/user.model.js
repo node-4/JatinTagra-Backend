@@ -122,6 +122,10 @@ var userSchema = new schema(
                 default: [0, 0]
             },
         },
+        isAdminVerify: {
+            type: Boolean,
+            default: false
+        },
     },
     { timestamps: true }
 );
