@@ -157,5 +157,8 @@ const DocumentSchema = schema({
     enum: ["assigned", "out_for_delivery", "delivered", ""],
     default: ""
   },
+  otp: {
+    type: String,
+  },
 }, { timestamps: true })
 module.exports = mongoose.model("Order", DocumentSchema);

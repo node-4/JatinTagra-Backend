@@ -45,5 +45,7 @@ module.exports = (app) => {
     app.post('/api/v1/user/notifications/create', [authJwt.verifyToken], auth.createNotification);
     app.put('/api/v1/user/notifications/:notificationId', [authJwt.verifyToken], auth.markNotificationAsRead);
     app.get('/api/v1/user/notifications/user/:userId', /*[authJwt.verifyToken],*/ auth.getNotificationsForUser);
+    app.post('/api/v1/user/order/send-otp/:orderId', [authJwt.verifyToken], auth.sendOTP);
+    app.post('/api/v1/user/order/verify-otp/:orderId', [authJwt.verifyToken], auth.verifyOTP);
 
 };

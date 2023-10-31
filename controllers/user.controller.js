@@ -16,6 +16,7 @@ const userCard = require("../models/userCard");
 const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
 const Notification = require('../models/notificationModel');
+const Order = require('../models/orders/orderModel');
 
 exports.registration = async (req, res) => {
         const { phone, email } = req.body;
@@ -892,5 +893,58 @@ exports.getNotificationsForUser = async (req, res) => {
                 return res.status(200).json({ status: 200, message: 'Notifications retrieved successfully', data: notifications });
         } catch (error) {
                 return res.status(500).json({ status: 500, message: 'Error retrieving notifications', error: error.message });
+        }
+};
+
+
+function generateOTP() {
+        const digits = '0123456789';
+        let otp = '';
+        for (let i = 0; i < 4; i++) {
+                const randomIndex = Math.floor(Math.random() * digits.length);
+                otp += digits[randomIndex];
+        }
+        return otp;
+}
+
+exports.sendOTP = async (req, res) => {
+        try {
+                const { orderId } = req.params;
+                const order = await Order.findById(orderId);
+
+                if (!order) {
+                        return res.status(404).json({ success: false, message: 'Order not found' });
+                }
+
+                const otp = generateOTP();
+                order.otp = otp;
+                await order.save();
+
+                return res.status(200).json({ success: true, message: 'OTP sent', otp });
+        } catch (error) {
+                console.error('Error sending OTP:', error);
+                res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+};
+
+exports.verifyOTP = async (req, res) => {
+        try {
+                const { orderId } = req.params;
+                const { otp } = req.body;
+
+                const order = await Order.findById(orderId);
+
+                if (!order) {
+                        return res.status(404).json({ success: false, message: 'Order not found' });
+                }
+
+                if (order.otp === otp) {
+                        return res.status(200).json({ success: true, message: 'OTP is valid' });
+                } else {
+                        return res.status(400).json({ success: false, message: 'Invalid OTP' });
+                }
+        } catch (error) {
+                console.error('Error verifying OTP:', error);
+                res.status(500).json({ success: false, message: 'Internal server error' });
         }
 };
