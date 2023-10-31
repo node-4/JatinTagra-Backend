@@ -907,44 +907,48 @@ function generateOTP() {
         return otp;
 }
 
+
 exports.sendOTP = async (req, res) => {
-        try {
-                const { orderId } = req.params;
-                const order = await Order.findById(orderId);
+  try {
+    const { orderId } = req.params;
+    const { mobileNumber } = req.body; 
+    const order = await Order.findById(orderId);
 
-                if (!order) {
-                        return res.status(404).json({ success: false, message: 'Order not found' });
-                }
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
 
-                const otp = generateOTP();
-                order.otp = otp;
-                await order.save();
+    const otp = generateOTP();
+    order.paymentRecived.otp = otp; 
+    order.paymentRecived.mobileNumber = mobileNumber;
+    await order.save();
 
-                return res.status(200).json({ success: true, message: 'OTP sent', otp });
-        } catch (error) {
-                console.error('Error sending OTP:', error);
-                res.status(500).json({ success: false, message: 'Internal server error' });
-        }
+    return res.status(200).json({ success: true, message: 'OTP sent', otp });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 };
 
 exports.verifyOTP = async (req, res) => {
-        try {
-                const { orderId } = req.params;
-                const { otp } = req.body;
+  try {
+    const { orderId } = req.params;
+    const { otp } = req.body;
+    const order = await Order.findById(orderId);
 
-                const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
 
-                if (!order) {
-                        return res.status(404).json({ success: false, message: 'Order not found' });
-                }
-
-                if (order.otp === otp) {
-                        return res.status(200).json({ success: true, message: 'OTP is valid' });
-                } else {
-                        return res.status(400).json({ success: false, message: 'Invalid OTP' });
-                }
-        } catch (error) {
-                console.error('Error verifying OTP:', error);
-                res.status(500).json({ success: false, message: 'Internal server error' });
-        }
+    if (order.paymentRecived.otp === otp) { 
+      return res.status(200).json({ success: true, message: 'OTP is valid' });
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 };
+
+
