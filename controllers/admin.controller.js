@@ -76,9 +76,9 @@ exports.signin = async (req, res) => {
 };
 
 exports.resetPassword = async (req, res) => {
-    const { id } = req.params;
+    const { phone, email } = req.body;
     try {
-        const user = await User.findOne({ _id: id, userType: "ADMIN" });
+        const user = await User.findOne({ phone: phone, email: email, userType: "ADMIN" });
         if (!user) {
             return res.status(404).send({ status: 404, message: "User not found" });
         }

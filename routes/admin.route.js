@@ -5,7 +5,7 @@ const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCatego
 module.exports = (app) => {
     app.post("/api/v1/admin/registration", auth.registration);
     app.post("/api/v1/admin/login", auth.signin);
-    app.post("/api/v1/admin/resetPassword/:id", auth.resetPassword);
+    app.post("/api/v1/admin/resetPassword", auth.resetPassword);
     app.put("/api/v1/admin/update", [authJwt.verifyToken], auth.update);
     app.post("/api/v1/Category/addCategory", [authJwt.verifyToken], categoryUpload.single('image'), auth.createCategory);
     app.get("/api/v1/Category/allCategory", auth.getCategories);
