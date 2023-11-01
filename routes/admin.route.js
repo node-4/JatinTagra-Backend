@@ -55,5 +55,11 @@ module.exports = (app) => {
     app.get("/api/v1/admin/viewUser/:id", auth.viewUser);
     app.delete("/api/v1/admin/deleteUser/:id", [authJwt.verifyToken], auth.deleteUser);
     app.put('/api/v1/admin/user/verify-admin/:userId', [authJwt.verifyToken], auth.verifyAdminStatus);
+    app.post('/api/v1/admin/announcement/create', [authJwt.verifyToken], auth.createAnnouncement);
+    app.get('/api/v1/admin/announcement/all', [authJwt.verifyToken], auth.getAllAnnouncements);
+    app.get('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.getAnnouncementById);
+    app.put('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.updateAnnouncement);
+    app.delete('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.deleteAnnouncement);
+
 
 };

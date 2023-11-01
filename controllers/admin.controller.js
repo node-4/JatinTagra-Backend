@@ -27,6 +27,9 @@ const deliveryOrder = require("../models/orders/deliveryOrder");
 const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 const complaint = require("../models/complaint");
 const driverEarning = require("../models/driverEarning");
+const Announcement = require('../models/annoucmentModel');
+
+
 exports.registration = async (req, res) => {
     const { phone, email } = req.body;
     try {
@@ -75,19 +78,19 @@ exports.signin = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     const { id } = req.params;
     try {
-            const user = await User.findOne({ _id: id, userType: "ADMIN" });
-            if (!user) {
-                    return res.status(404).send({ status: 404, message: "User not found" });
-            }
-            if (req.body.newPassword == req.body.confirmPassword) {
-                    const updated = await User.findOneAndUpdate({ _id: user._id }, { $set: { password: bcrypt.hashSync(req.body.newPassword) } }, { new: true });
-                    return res.status(200).send({ status: 200, message: "Password update successfully.", data: updated, });
-            } else {
-                    return res.status(501).send({ status: 501, message: "Password Not matched.", data: {}, });
-            }
+        const user = await User.findOne({ _id: id, userType: "ADMIN" });
+        if (!user) {
+            return res.status(404).send({ status: 404, message: "User not found" });
+        }
+        if (req.body.newPassword == req.body.confirmPassword) {
+            const updated = await User.findOneAndUpdate({ _id: user._id }, { $set: { password: bcrypt.hashSync(req.body.newPassword) } }, { new: true });
+            return res.status(200).send({ status: 200, message: "Password update successfully.", data: updated, });
+        } else {
+            return res.status(501).send({ status: 501, message: "Password Not matched.", data: {}, });
+        }
     } catch (error) {
-            console.error(error);
-            return res.status(500).send({ status: 500, message: "Server error" + error.message });
+        console.error(error);
+        return res.status(500).send({ status: 500, message: "Server error" + error.message });
     }
 };
 
@@ -810,3 +813,129 @@ exports.verifyAdminStatus = async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
+
+exports.createAnnouncement = async (req, res) => {
+    try {
+        const { content } = req.body;
+        const announcement = new Announcement({ content });
+        const newAnnouncement = await announcement.save();
+
+        return res.status(201).json({
+            status: 201,
+            message: 'Announcement created successfully',
+            data: newAnnouncement,
+        });
+    } catch (error) {
+        console.error('Error creating announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.getAllAnnouncements = async (req, res) => {
+    try {
+        const announcements = await Announcement.find().sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcements retrieved successfully',
+            data: announcements,
+        });
+    } catch (error) {
+        console.error('Error fetching announcements:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.getAnnouncementById = async (req, res) => {
+    try {
+        const { announcementId } = req.params;
+        const announcement = await Announcement.findById(announcementId);
+
+        if (!announcement) {
+            return res.status(404).json({
+                success: false,
+                message: 'Announcement not found',
+            });
+        }
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcement retrieved successfully',
+            data: announcement,
+        });
+    } catch (error) {
+        console.error('Error fetching announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.updateAnnouncement = async (req, res) => {
+    try {
+        const { announcementId } = req.params;
+        const { content } = req.body;
+        const announcement = await Announcement.findByIdAndUpdate(announcementId, { content }, { new: true });
+
+        if (!announcement) {
+            return res.status(404).json({
+                success: false,
+                message: 'Announcement not found',
+            });
+        }
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcement updated successfully',
+            data: announcement,
+        });
+    } catch (error) {
+        console.error('Error updating announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.deleteAnnouncement = async (req, res) => {
+    try {
+        const { announcementId } = req.params;
+        const announcement = await Announcement.findByIdAndRemove(announcementId);
+
+        if (!announcement) {
+            return res.status(404).json({
+                success: false,
+                message: 'Announcement not found',
+            });
+        }
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcement deleted successfully',
+        });
+    } catch (error) {
+        console.error('Error deleting announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
