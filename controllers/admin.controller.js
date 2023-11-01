@@ -184,6 +184,7 @@ exports.createSubCategory = async (req, res) => {
 };
 exports.getSubCategoryForAdmin = async (req, res) => {
     try {
+        console.log("123");
         const data = await subCategory.find({}).populate('categoryId');
         if (data.length > 0) {
             return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
@@ -252,7 +253,7 @@ exports.getSubCategory = async (req, res) => {
 };
 exports.getIdSubCategory = async (req, res) => {
     try {
-        const data = await subCategory.findById(req.params.id);
+        const data = await subCategory.findById(req.params.id).populate('categoryId');
         if (!data || data.length === 0) {
             return res.status(400).send({ msg: "not found" });
         }
@@ -654,7 +655,26 @@ exports.driverbonusOrderAmount = async (req, res) => {
 };
 exports.getOrders = async (req, res, next) => {
     try {
-        const orders = await orderModel.find({ orderStatus: "confirmed", });
+        const orders = await orderModel.find({ orderStatus: "confirmed", })
+            .populate({
+                path: 'userId',
+                // select: 'fullName',
+            })
+            .populate({
+                path: 'vendorId',
+                // select: 'fullName phone email'
+            })
+            .populate({
+                path: 'category',
+
+            })
+            .populate({
+                path: 'productId',
+            })
+            .populate({
+                path: 'discountId',
+            });
+
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
         }
