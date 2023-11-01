@@ -1,7 +1,7 @@
 const { validateUser } = require("../middlewares");
 const auth = require("../controllers/admin.controller");
 const { authJwt, authorizeRoles } = require("../middlewares");
-const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload } = require('../middlewares/imageUpload')
+const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload, bannerUpload } = require('../middlewares/imageUpload')
 module.exports = (app) => {
     app.post("/api/v1/admin/registration", auth.registration);
     app.post("/api/v1/admin/login", auth.signin);
@@ -21,7 +21,7 @@ module.exports = (app) => {
     app.get("/api/v1/SubCategory/allSubcategoryById/:categoryId", auth.getSubCategoryByCategoryId);
     app.get('/api/v1/admin/help/getAllQuery', [authJwt.verifyToken], auth.getAllHelpandSupport);
     app.delete('/api/v1/admin/help/delete/:id', [authJwt.verifyToken], auth.DeleteHelpandSupport);
-    app.post("/api/v1/Banner/AddBanner", [authJwt.verifyToken], auth.AddBanner);
+    app.post("/api/v1/Banner/AddBanner", [authJwt.verifyToken], bannerUpload.single('image'), auth.AddBanner);
     app.get("/api/v1/Banner/allBanner", auth.getBanner);
     app.get("/api/v1/Banner/getBannerById/:id", auth.getBannerById);
     app.delete("/api/v1/Banner/deleteBanner/:id", [authJwt.verifyToken], auth.DeleteBanner);

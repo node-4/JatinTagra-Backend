@@ -326,7 +326,12 @@ exports.AddBanner = async (req, res) => {
         if (!category) {
             return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
         }
-        const data = { image: req.body.image, desc: req.body.desc, category: category._id }
+        let image;
+        if (req.file) {
+            image = req.file.path
+        }
+
+        const data = { image: image, desc: req.body.desc, category: category._id }
         const Data = await banner.create(data);
         return res.status(200).json({ status: 200, message: "Banner is Addded ", data: Data })
     } catch (err) {
