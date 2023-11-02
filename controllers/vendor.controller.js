@@ -435,7 +435,7 @@ exports.getProducts = async (req, res) => {
 };
 exports.getProduct = async (req, res) => {
         try {
-                const product = await Product.findById({ _id: req.params.id }).populate('vendorId').populate('category').populate('subcategory');;
+                const product = await Product.findById({ _id: req.params.id }).populate('vendorId').populate('category').populate('subcategory');
                 if (!product) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
