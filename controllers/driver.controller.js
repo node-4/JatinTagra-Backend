@@ -340,7 +340,7 @@ exports.updateOrderStatus = async (req, res) => {
 };
 exports.acceptOrRejectOrderStatus = async (req, res) => {
         try {
-                const orderId = req.params.id;
+                const orderId = req.params.orderId;
                 const { OrderStatus } = req.body;
 
                 const order = await deliveryOrder.findById(orderId);
@@ -360,9 +360,15 @@ exports.acceptOrRejectOrderStatus = async (req, res) => {
                                 return res.status(200).json({ status: 200, message: "Order status changed to ACCEPT.", data: updatedOrder });
                         }
                 } else if (OrderStatus === "REJECT") {
-                        await deliveryOrder.findByIdAndDelete(orderId);
-
-                        return res.status(200).json({ status: 200, message: "Order deleted.", data: {} });
+                        const updatedOrder = await deliveryOrder.findByIdAndUpdate(
+                            orderId,
+                            { $set: { OrderStatus: "PENDING" } },
+                            { new: true }
+                        );
+                    
+                        if (updatedOrder) {
+                            return res.status(200).json({ status: 200, message: "Order status changed to PENDING.", data: updatedOrder });
+                        }
                 } else {
                         return res.status(400).json({ status: 400, message: "Invalid delivery status provided", data: {} });
                 }

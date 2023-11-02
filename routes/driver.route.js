@@ -29,7 +29,7 @@ module.exports = (app) => {
     app.get("/api/v1/driver/allOrders", [authJwt.verifyToken], auth.getOrders);
     app.get('/api/v1/driver/orders/:id', [authJwt.verifyToken], auth.getOrderById);
     app.put("/api/v1/driver/updateOrderStatus/:id", [authJwt.verifyToken], auth.updateOrderStatus);
-    app.put("/api/v1/driver/acceptOrRejectOrderStatus/:id", [authJwt.verifyToken], auth.acceptOrRejectOrderStatus);
+    app.put("/api/v1/driver/acceptOrRejectOrderStatus/:orderId", [authJwt.verifyToken], auth.acceptOrRejectOrderStatus);
     app.get("/api/v1/driver/allPackageOrders", [authJwt.verifyToken], auth.getPackageOrders);
     app.put("/api/v1/driver/driverUpdate", [authJwt.verifyToken], auth.driverUpdate);
     app.get("/api/v1/driver/driverEarning", [authJwt.verifyToken], auth.driverEarning);
