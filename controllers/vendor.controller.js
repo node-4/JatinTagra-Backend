@@ -411,15 +411,17 @@ exports.addProduct = async (req, res) => {
 };
 exports.getProducts = async (req, res) => {
         try {
+                console.log("h");
                 if (req.query.category) {
-                        const product = await Product.find({ vendorId: req.user._id, category: req.query.category });
+                        const product = await Product.find({ vendorId: req.user._id, category: req.query.category })
+                                .populate('vendorId');
                         if (product.length == 0) {
                                 return res.status(404).json({ message: "No data found", data: {} });
                         } else {
                                 return res.status(200).json({ message: "Product data found.", status: 200, data: product });
                         }
                 } else {
-                        const product = await Product.find({ vendorId: req.user._id });
+                        const product = await Product.find({ vendorId: req.user._id }).populate('vendorId').populate('category').populate('subcategory');
                         if (product.length == 0) {
                                 return res.status(404).json({ message: "No data found", data: {} });
                         } else {
@@ -433,7 +435,7 @@ exports.getProducts = async (req, res) => {
 };
 exports.getProduct = async (req, res) => {
         try {
-                const product = await Product.findById({ _id: req.params.id });
+                const product = await Product.findById({ _id: req.params.id }).populate('vendorId').populate('category').populate('subcategory');;
                 if (!product) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
