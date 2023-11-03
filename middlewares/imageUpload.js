@@ -19,5 +19,7 @@ const storage5 = new CloudinaryStorage({ cloudinary: cloudinary, params: { folde
 const subCategoryUpload = multer({ storage: storage5 });
 const storage6 = new CloudinaryStorage({ cloudinary: cloudinary, params: { folder: "jatinTangra/images/subcategory", allowed_formats: ["webp", "avif", "jpg", "jpeg", "png", "PNG", "xlsx", "xls", "pdf", "PDF"], }, });
 const bannerUpload = multer({ storage: storage6 });
+const storage7 = new CloudinaryStorage({ cloudinary: cloudinary, params: { folder: "jatinTangra/images/subcategory", allowed_formats: ["webp", "avif", "jpg", "jpeg", "png", "PNG", "xlsx", "xls", "pdf", "PDF"], }, });
+const videoImage = multer({ storage: storage7 });
 
-module.exports = { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload, bannerUpload };
+module.exports = { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload, bannerUpload, videoImage };

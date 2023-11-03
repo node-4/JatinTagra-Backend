@@ -47,5 +47,7 @@ module.exports = (app) => {
     app.get('/api/v1/user/notifications/user/:userId', /*[authJwt.verifyToken],*/ auth.getNotificationsForUser);
     app.post('/api/v1/user/order/send-otp/:orderId', [authJwt.verifyToken], auth.sendOTP);
     app.post('/api/v1/user/order/verify-otp/:orderId', [authJwt.verifyToken], auth.verifyOTP);
+    app.post('/api/v1/user/videos', [authJwt.verifyToken], auth.createVideo);
+    app.get('/api/v1/user/videos', [authJwt.verifyToken], auth.getAllVideos);
 
 };

@@ -17,6 +17,8 @@ const staticContent = require('../models/staticContent');
 const Faq = require("../models/faq.Model");
 const Notification = require('../models/notificationModel');
 const Order = require('../models/orders/orderModel');
+const Video = require('../models/wtachVideoModel');
+
 
 exports.registration = async (req, res) => {
         const { phone, email } = req.body;
@@ -951,4 +953,27 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
+
+exports.createVideo = async (req, res) => {
+    try {
+        const { videoLink, image, description } = req.body;
+        const video = new Video({ videoLink, image, description });
+        await video.save();
+        res.status(201).json({ status: 201, message: 'Video created successfully', data: video });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 500, message: 'Error creating video', error: error.message });
+    }
+};
+
+
+exports.getAllVideos = async (req, res) => {
+        try {
+            const videos = await Video.find();
+            res.status(200).json({ status: 200, message: 'Videos retrieved successfully', data: videos });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ status: 500, message: 'Error fetching videos', error: error.message });
+        }
+    };
 

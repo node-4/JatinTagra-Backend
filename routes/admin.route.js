@@ -1,7 +1,7 @@
 const { validateUser } = require("../middlewares");
 const auth = require("../controllers/admin.controller");
 const { authJwt, authorizeRoles } = require("../middlewares");
-const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload, bannerUpload } = require('../middlewares/imageUpload')
+const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload, bannerUpload, videoImage } = require('../middlewares/imageUpload')
 module.exports = (app) => {
     app.post("/api/v1/admin/registration", auth.registration);
     app.post("/api/v1/admin/login", auth.signin);
@@ -60,6 +60,8 @@ module.exports = (app) => {
     app.get('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.getAnnouncementById);
     app.put('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.updateAnnouncement);
     app.delete('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.deleteAnnouncement);
+    app.post('/api/v1/admin/videos', [authJwt.verifyToken], videoImage.single('image'), auth.createVideo);
+    app.get('/api/v1/admin/videos', [authJwt.verifyToken], auth.getAllVideos);
 
 
 };

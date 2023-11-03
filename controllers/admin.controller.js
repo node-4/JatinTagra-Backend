@@ -28,6 +28,7 @@ const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 const complaint = require("../models/complaint");
 const driverEarning = require("../models/driverEarning");
 const Announcement = require('../models/annoucmentModel');
+const Video = require('../models/wtachVideoModel');
 
 
 exports.registration = async (req, res) => {
@@ -686,7 +687,13 @@ exports.getOrders = async (req, res, next) => {
 };
 exports.getcancelReturnOrder = async (req, res, next) => {
     try {
-        const orders = await cancelReturnOrder.find({}).populate('Orders');
+        const orders = await cancelReturnOrder.find({}).populate('Orders userId vendorId').populate({
+            path: 'Orders',
+            populate: {
+                path: 'productId',
+                model: 'Product',
+            },
+        });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
         }
@@ -787,7 +794,13 @@ exports.allTransactionUser = async (req, res) => {
 };
 exports.getdeliveryOrders = async (req, res, next) => {
     try {
-        const orders = await deliveryOrder.find({}).populate('Orders userId driverId');
+        const orders = await deliveryOrder.find({}).populate('Orders userId driverId').populate({
+            path: 'Orders',
+            populate: {
+                path: 'productId',
+                model: 'Product',
+            },
+        });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
         }
@@ -964,3 +977,31 @@ exports.deleteAnnouncement = async (req, res) => {
     }
 };
 
+
+exports.createVideo = async (req, res) => {
+    try {
+        const { videoLink, description } = req.body;
+        let image;
+        if (req.file) {
+            image = req.file.path
+        }
+
+        const video = new Video({ videoLink, image: image, description });
+        await video.save();
+        res.status(201).json({ status: 201, message: 'Video created successfully', data: video });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 500, message: 'Error creating video', error: error.message });
+    }
+};
+
+
+exports.getAllVideos = async (req, res) => {
+    try {
+        const videos = await Video.find();
+        res.status(200).json({ status: 200, message: 'Videos retrieved successfully', data: videos });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 500, message: 'Error fetching videos', error: error.message });
+    }
+};
