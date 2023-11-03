@@ -796,14 +796,16 @@ exports.getdeliveryOrders = async (req, res, next) => {
     try {
         const orders = await deliveryOrder.find({}).populate('Orders userId driverId').populate({
             path: 'Orders',
-            populate: {
-                path: 'productId',
-                model: 'Product',
-            },
-            populate: {
-                path: 'vendorId',
-                model: 'vendorDetails',
-            },
+            populate: [
+                {
+                    path: 'productId',
+                    model: 'Product',
+                },
+                {
+                    path: 'vendorId',
+                    model: 'vendorDetails',
+                },
+            ],
         });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });

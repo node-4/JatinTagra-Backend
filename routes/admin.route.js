@@ -61,7 +61,7 @@ module.exports = (app) => {
     app.put('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.updateAnnouncement);
     app.delete('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.deleteAnnouncement);
     app.post('/api/v1/admin/videos', [authJwt.verifyToken], videoImage.single('image'), auth.createVideo);
-    app.get('/api/v1/admin/videos', [authJwt.verifyToken], auth.getAllVideos);
+    app.get('/api/v1/admin/videos', /*[authJwt.verifyToken],*/ auth.getAllVideos);
 
 
 };
