@@ -800,6 +800,10 @@ exports.getdeliveryOrders = async (req, res, next) => {
                 path: 'productId',
                 model: 'Product',
             },
+            populate: {
+                path: 'vendorId',
+                model: 'vendorDetails',
+            },
         });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
