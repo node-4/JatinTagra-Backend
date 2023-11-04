@@ -845,3 +845,21 @@ exports.getPenaltiesForDriver = async (req, res) => {
 };
 
 
+exports.getAllTransactionsForDriver = async (req, res) => {
+        try {
+                const driverId = req.params.driverId;
+
+                const transactions = await Transaction.find({ user: driverId });
+
+                if (!transactions) {
+                        return res.status(404).json({ status: 404, message: 'Transactions not found for the driver', data: [] });
+                }
+
+                return res.status(200).json({ status: 200, message: 'Transaction history for the driver', data: transactions });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, message: 'Server error', error: error.message });
+        }
+};
+
+

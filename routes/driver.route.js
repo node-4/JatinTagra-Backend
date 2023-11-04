@@ -49,6 +49,7 @@ module.exports = (app) => {
     app.post('/api/v1/driver/wallet/add-money', [authJwt.verifyToken], auth.addMoney);
     app.post('/api/v1/driver/wallet/withdraw-money', [authJwt.verifyToken], auth.withdrawMoney);
     app.get('/api/v1/driver/penalties/:driverId', [authJwt.verifyToken], auth.getPenaltiesForDriver);
+    app.get('/api/v1/driver/:driverId/transactions', [authJwt.verifyToken], auth.getAllTransactionsForDriver);
 
 
 
