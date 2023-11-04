@@ -29,6 +29,8 @@ const complaint = require("../models/complaint");
 const driverEarning = require("../models/driverEarning");
 const Announcement = require('../models/annoucmentModel');
 const Video = require('../models/wtachVideoModel');
+const Penalty = require('../models/penaltyModel');
+
 
 
 exports.registration = async (req, res) => {
@@ -1009,5 +1011,73 @@ exports.getAllVideos = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ status: 500, message: 'Error fetching videos', error: error.message });
+    }
+};
+
+
+exports.getDriverEarningsByBonusType = async (req, res) => {
+    try {
+        const driverId = req.params.driverId;
+        const bonusType = req.params.bonusType;
+
+        const earnings = await driverEarning.find({ driverId, type: bonusType });
+
+        if (earnings.length === 0) {
+            return res.status(404).json({ status: 404, message: 'Earnings not found', data: [] });
+        }
+
+        return res.status(200).json({ status: 200, message: 'Driver earnings by bonus type', data: earnings });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+    }
+};
+
+
+exports.getDriverEarningsByOrderType = async (req, res) => {
+    try {
+        const driverId = req.params.driverId;
+        const orderType = req.params.orderType;
+
+        const earnings = await driverEarning.find({ driverId, type: orderType });
+
+        if (earnings.length === 0) {
+            return res.status(404).json({ status: 404, message: 'Earnings not found', data: [] });
+        }
+
+        return res.status(200).json({ status: 200, message: 'Driver earnings by bonus type', data: earnings });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+    }
+};
+
+
+
+exports.addPenalty = async (req, res) => {
+    try {
+        const { driverId, reason, amount } = req.body;
+
+        const penalty = new Penalty({ driver: driverId, reason, amount });
+        await penalty.save();
+
+        return res.status(201).json({ message: 'Penalty added successfully', data: penalty });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+
+exports.getPenaltiesForDriver = async (req, res) => {
+    try {
+        const { driverId } = req.params;
+
+        const penalties = await Penalty.find({ driver: driverId });
+
+        return res.status(200).json({ message: 'Penalties for the driver', data: penalties });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };

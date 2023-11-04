@@ -9,13 +9,15 @@ const banner = require('../models/banner');
 const vendorDetails = require("../models/vendorDetails");
 const Product = require("../models/product.model");
 const Discount = require("../models/discount.model");
-const transaction = require('../models/transactionModel');
+const Transaction = require('../models/transactionModel');
 const Address = require("../models/AddressModel");
 const bankDetails = require("../models/bankDetails");
 const deliveryOrder = require("../models/orders/deliveryOrder");
 const orderModel = require("../models/orders/orderModel");
 const driverEarning = require("../models/driverEarning");
 const DutyTracking = require('../models/DutyTracking');
+const Penalty = require('../models/penaltyModel');
+
 
 
 exports.signInWithPhone = async (req, res) => {
@@ -361,13 +363,13 @@ exports.acceptOrRejectOrderStatus = async (req, res) => {
                         }
                 } else if (OrderStatus === "REJECT") {
                         const updatedOrder = await deliveryOrder.findByIdAndUpdate(
-                            orderId,
-                            { $set: { OrderStatus: "PENDING" } },
-                            { new: true }
+                                orderId,
+                                { $set: { OrderStatus: "PENDING" } },
+                                { new: true }
                         );
-                    
+
                         if (updatedOrder) {
-                            return res.status(200).json({ status: 200, message: "Order status changed to PENDING.", data: updatedOrder });
+                                return res.status(200).json({ status: 200, message: "Order status changed to PENDING.", data: updatedOrder });
                         }
                 } else {
                         return res.status(400).json({ status: 400, message: "Invalid delivery status provided", data: {} });
@@ -706,3 +708,140 @@ exports.deleteDutyTracking = async (req, res) => {
                 return res.status(500).json({ message: 'Server error' });
         }
 };
+
+exports.getDriverEarningsByBonusType = async (req, res) => {
+        try {
+                const driverId = req.params.driverId;
+                const bonusType = req.params.bonusType;
+
+                const earnings = await driverEarning.find({ driverId, type: bonusType });
+
+                if (earnings.length === 0) {
+                        return res.status(404).json({ status: 404, message: 'Earnings not found', data: [] });
+                }
+
+                return res.status(200).json({ status: 200, message: 'Driver earnings by bonus type', data: earnings });
+        } catch (error) {
+                console.log(error);
+                return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+        }
+};
+
+
+exports.getDriverEarningsByOrderType = async (req, res) => {
+        try {
+                const driverId = req.params.driverId;
+                const orderType = req.params.orderType;
+
+                const earnings = await driverEarning.find({ driverId, type: orderType });
+
+                if (earnings.length === 0) {
+                        return res.status(404).json({ status: 404, message: 'Earnings not found', data: [] });
+                }
+
+                return res.status(200).json({ status: 200, message: 'Driver earnings by bonus type', data: earnings });
+        } catch (error) {
+                console.log(error);
+                return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+        }
+};
+
+
+exports.getAllDriverEarnings = async (req, res) => {
+        try {
+                const driverId = req.params.driverId;
+
+                const earnings = await driverEarning.find({ driverId });
+
+                if (earnings.length === 0) {
+                        return res.status(404).json({ status: 404, message: 'Earnings not found for the given driver', data: [] });
+                }
+
+                return res.status(200).json({ status: 200, message: 'All driver earnings by driver ID', data: earnings });
+        } catch (error) {
+                console.log(error);
+                return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+        }
+};
+
+
+exports.addMoney = async (req, res) => {
+        try {
+                const userId = req.user.id;
+                const { amount } = req.body;
+
+                const user = await User.findById(userId);
+
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found', data: {} });
+                }
+
+                const transaction = new Transaction({
+                        user: userId,
+                        amount,
+                        type: 'Credit',
+                        Status: 'success',
+                });
+
+                await transaction.save();
+
+                user.wallet += amount;
+                await user.save();
+
+                return res.status(200).json({ status: 200, message: 'Money added to the wallet successfully', data: user });
+        } catch (error) {
+                console.log(error);
+                return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+        }
+};
+
+
+exports.withdrawMoney = async (req, res) => {
+        try {
+                const userId = req.user.id;
+                const { amount } = req.body;
+
+                const user = await User.findById(userId);
+
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found', data: {} });
+                }
+
+                if (user.wallet < amount) {
+                        return res.status(400).json({ status: 400, message: 'Insufficient balance', data: {} });
+                }
+
+                const transaction = new Transaction({
+                        user: userId,
+                        amount,
+                        type: 'Debit',
+                        Status: 'success',
+                });
+
+                await transaction.save();
+
+                user.wallet -= amount;
+                await user.save();
+
+                return res.status(200).json({ status: 200, message: 'Money withdrawn from the wallet successfully', data: user });
+        } catch (error) {
+                console.log(error);
+                return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+        }
+};
+
+
+exports.getPenaltiesForDriver = async (req, res) => {
+        try {
+                const { driverId } = req.params;
+
+                const penalties = await Penalty.find({ driver: driverId });
+
+                return res.status(200).json({ message: 'Penalties for the driver', data: penalties });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ message: 'Internal server error', error: error.message });
+        }
+};
+
+

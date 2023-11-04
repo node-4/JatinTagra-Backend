@@ -62,6 +62,10 @@ module.exports = (app) => {
     app.delete('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.deleteAnnouncement);
     app.post('/api/v1/admin/videos', [authJwt.verifyToken], videoImage.single('image'), auth.createVideo);
     app.get('/api/v1/admin/videos', /*[authJwt.verifyToken],*/ auth.getAllVideos);
+    app.get('/api/v1/admin/earnings/:driverId/:bonusType', [authJwt.verifyToken], auth.getDriverEarningsByBonusType);
+    app.get('/api/v1/admin/earnings/:driverId/:orderType', [authJwt.verifyToken], auth.getDriverEarningsByOrderType);
+    app.post('/api/v1/admin/driver/penalties/add', [authJwt.verifyToken], auth.addPenalty);
+    app.get('/api/v1/admin/driver/penalties/:driverId', [authJwt.verifyToken], auth.getPenaltiesForDriver);
 
 
 };

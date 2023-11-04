@@ -43,5 +43,13 @@ module.exports = (app) => {
     app.get('/api/v1/driver/duty-tracking/:id', [authJwt.verifyToken], auth.getDutyTrackingById);
     app.put('/api/v1/driver/duty-tracking/:id', [authJwt.verifyToken], auth.updateDutyTracking);
     app.delete('/api/v1/driver/duty-tracking/:id', [authJwt.verifyToken], auth.deleteDutyTracking);
+    app.get('/api/v1/driver/earnings/:driverId/:bonusType', [authJwt.verifyToken], auth.getDriverEarningsByBonusType);
+    app.get('/api/v1/driver/earnings/:driverId/:orderType', [authJwt.verifyToken], auth.getDriverEarningsByOrderType);
+    app.get('/api/v1/driver/earnings/:driverId', [authJwt.verifyToken], auth.getAllDriverEarnings);
+    app.post('/api/v1/driver/wallet/add-money', [authJwt.verifyToken], auth.addMoney);
+    app.post('/api/v1/driver/wallet/withdraw-money', [authJwt.verifyToken], auth.withdrawMoney);
+    app.get('/api/v1/driver/penalties/:driverId', [authJwt.verifyToken], auth.getPenaltiesForDriver);
+
+
 
 };
