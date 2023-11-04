@@ -591,7 +591,7 @@ exports.addDiscount = async (req, res) => {
 };
 exports.getDiscount = async (req, res) => {
         try {
-                const discount = await Discount.find({ vendorId: req.user._id });
+                const discount = await Discount.find({ vendorId: req.user._id }).populate('productId');
                 if (discount.length == 0) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
