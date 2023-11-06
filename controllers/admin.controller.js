@@ -775,7 +775,23 @@ exports.deleteUser = async (req, res) => {
 };
 exports.getComplaint = async (req, res, next) => {
     try {
-        const orders = await complaint.find({}).populate('userId vendorId Orders Orders.$.productId')
+        const orders = await complaint.find({}).populate('userId vendorId Orders Orders.$.productId').populate({
+            path: 'Orders',
+            populate: [
+                {
+                    path: 'productId',
+                    model: 'Product',
+                },
+                {
+                    path: 'vendorId',
+                    model: 'user',
+                },
+                {
+                    path: 'category',
+                    model: 'Category',
+                },
+            ],
+        });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Complain not found", data: {} });
         }
