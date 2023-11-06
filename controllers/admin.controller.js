@@ -214,12 +214,12 @@ exports.paginateSubCategoriesSearch = async (req, res) => {
         if ((fromDate == 'null') && (toDate != 'null')) {
             query.createdAt = { $lte: toDate };
         }
-        if ((fromDate != 'null') && (toDate != 'null')) {
-            query.$and = [
-                { createdAt: { $gte: fromDate } },
-                { createdAt: { $lte: toDate } },
-            ]
-        }
+        // if ((fromDate != 'null') && (toDate != 'null')) {
+        //     query.$and = [
+        //         { createdAt: { $gte: fromDate } },
+        //         { createdAt: { $lte: toDate } },
+        //     ]
+        // }
         let options = {
             page: Number(page) || 1,
             limit: Number(limit) || 10,
@@ -227,9 +227,11 @@ exports.paginateSubCategoriesSearch = async (req, res) => {
             populate: ('categoryId')
         };
         let data = await subCategory.paginate(query, options);
+        console.log("data", data);
         return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
 
     } catch (err) {
+        console.log(err);
         return res.status(500).send({ msg: "internal server error ", error: err.message, });
     }
 };
