@@ -645,7 +645,34 @@ exports.getOrders = async (req, res, next) => {
 };
 exports.getcancelReturnOrder = async (req, res, next) => {
         try {
-                const orders = await cancelReturnOrder.find({ vendorId: req.user._id }).populate('Orders');
+                const orders = await cancelReturnOrder.find({ vendorId: req.user._id }).populate('Orders')
+                .populate('userId')
+                .populate('vendorId')
+                .populate({
+                  path: 'Orders',
+                  populate: [
+                    {
+                      path: 'userId',
+                      model: 'user'
+                    },
+                    {
+                      path: 'vendorId',
+                      model: 'user'
+                    },
+                    {
+                        path: 'category',
+                        model: 'Category'
+                      },
+                      {
+                        path: 'productId',
+                        model: 'Product'
+                      },
+                      {
+                        path: 'discountId',
+                        model: 'discount'
+                      }
+                  ]
+                });
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
@@ -794,7 +821,9 @@ exports.createOrder = async (req, res) => {
 };
 exports.getComplaint = async (req, res, next) => {
         try {
+                console.log(req.user);
                 const orders = await complaint.find({ $or: [{ userId: req.user._id }, { vendorId: req.user._id }] }).populate('userId vendorId Orders Orders.$.productId')
+                console.log("hi",orders);
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Complain not found", data: {} });
                 }
@@ -806,7 +835,7 @@ exports.getComplaint = async (req, res, next) => {
 };
 exports.getComplainbyId = async (req, res, next) => {
         try {
-                const orders = await Complain.findById({ _id: req.params.id }).populate('vendorId userId Orders');
+                const orders = await complaint.findById({ _id: req.params.id }).populate('vendorId userId Orders');
                 if (!orders) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
