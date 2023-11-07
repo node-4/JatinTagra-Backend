@@ -889,10 +889,19 @@ exports.getMetric = async (req, res, next) => {
                         ]
                 }
                 const orders = await orderModel.find({ query, preparingStatus: "New" }).count()
+                console.log("1", orders);
                 const orders1 = await orderModel.find({ query, preparingStatus: "Preparing" }).count()
+                console.log("2", orders);
+
                 const orders2 = await orderModel.find({ query, preparingStatus: "Ready" }).count()
+                console.log("3", orders);
+
                 const orders3 = await orderModel.find({ query, preparingStatus: "out_for_delivery" }).count()
+                console.log("4", orders);
+
                 const orders4 = await orderModel.find({ query, preparingStatus: "delivered" }).count()
+                console.log("5", orders);
+                //enum: ["pending", "Reject", "New", "Preparing", "Ready", "out_for_delivery", "delivered"],
                 let dashboard = {
                         new: orders,
                         preparing: orders1,
