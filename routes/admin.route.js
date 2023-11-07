@@ -67,6 +67,8 @@ module.exports = (app) => {
     app.get('/api/v1/admin/earnings/:driverId/:orderType', [authJwt.verifyToken], auth.getDriverEarningsByOrderType);
     app.post('/api/v1/admin/driver/penalties/add', [authJwt.verifyToken], auth.addPenalty);
     app.get('/api/v1/admin/driver/penalties/:driverId', [authJwt.verifyToken], auth.getPenaltiesForDriver);
+    app.put('/api/v1/admin/verify-vendor/:vendorId', [authJwt.verifyToken], auth.verifyVendor);
+
 
 
 };

@@ -111,6 +111,12 @@ exports.signin = async (req, res) => {
                                 .status(404)
                                 .send({ message: "user not found ! not registered" });
                 }
+
+                if (user.isAdminVerify !== true) {
+                        return res.status(403).json({ message: "Wait for  account verification", status: 403, data: {} });
+
+                }
+
                 const isValidPassword = bcrypt.compareSync(password, user.password);
                 if (!isValidPassword) {
                         return res.status(401).send({ message: "Wrong password" });
@@ -118,7 +124,10 @@ exports.signin = async (req, res) => {
                 const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
                         expiresIn: authConfig.accessTokenTime,
                 });
-                return res.status(201).send({ data: user, accessToken: accessToken });
+                return res.status(200).send({
+                        status: 200,
+                        message: "Sign-in successful", data: user, accessToken: accessToken
+                });
         } catch (error) {
                 console.error(error);
                 return res.status(500).send({ message: "Server error" + error.message });
@@ -646,33 +655,33 @@ exports.getOrders = async (req, res, next) => {
 exports.getcancelReturnOrder = async (req, res, next) => {
         try {
                 const orders = await cancelReturnOrder.find({ vendorId: req.user._id }).populate('Orders')
-                .populate('userId')
-                .populate('vendorId')
-                .populate({
-                  path: 'Orders',
-                  populate: [
-                    {
-                      path: 'userId',
-                      model: 'user'
-                    },
-                    {
-                      path: 'vendorId',
-                      model: 'user'
-                    },
-                    {
-                        path: 'category',
-                        model: 'Category'
-                      },
-                      {
-                        path: 'productId',
-                        model: 'Product'
-                      },
-                      {
-                        path: 'discountId',
-                        model: 'discount'
-                      }
-                  ]
-                });
+                        .populate('userId')
+                        .populate('vendorId')
+                        .populate({
+                                path: 'Orders',
+                                populate: [
+                                        {
+                                                path: 'userId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'vendorId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'category',
+                                                model: 'Category'
+                                        },
+                                        {
+                                                path: 'productId',
+                                                model: 'Product'
+                                        },
+                                        {
+                                                path: 'discountId',
+                                                model: 'discount'
+                                        }
+                                ]
+                        });
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
@@ -823,7 +832,7 @@ exports.getComplaint = async (req, res, next) => {
         try {
                 console.log(req.user);
                 const orders = await complaint.find({ $or: [{ userId: req.user._id }, { vendorId: req.user._id }] }).populate('userId vendorId Orders Orders.$.productId')
-                console.log("hi",orders);
+                console.log("hi", orders);
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Complain not found", data: {} });
                 }
@@ -835,7 +844,32 @@ exports.getComplaint = async (req, res, next) => {
 };
 exports.getComplainbyId = async (req, res, next) => {
         try {
-                const orders = await complaint.findById({ _id: req.params.id }).populate('vendorId userId Orders');
+                const orders = await complaint.findById({ _id: req.params.id }).populate('vendorId userId Orders')
+                        .populate({
+                                path: 'Orders',
+                                populate: [
+                                        {
+                                                path: 'userId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'vendorId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'category',
+                                                model: 'Category'
+                                        },
+                                        {
+                                                path: 'productId',
+                                                model: 'Product'
+                                        },
+                                        {
+                                                path: 'discountId',
+                                                model: 'discount'
+                                        }
+                                ]
+                        });
                 if (!orders) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
