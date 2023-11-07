@@ -22,6 +22,7 @@ module.exports = (app) => {
     app.get('/api/v1/admin/help/getAllQuery', [authJwt.verifyToken], auth.getAllHelpandSupport);
     app.delete('/api/v1/admin/help/delete/:id', [authJwt.verifyToken], auth.DeleteHelpandSupport);
     app.post("/api/v1/Banner/AddBanner", [authJwt.verifyToken], bannerUpload.single('image'), auth.AddBanner);
+    app.put("/api/v1/updateBanners/:id", [authJwt.verifyToken], bannerUpload.single('image'), auth.updateBanner);
     app.get("/api/v1/Banner/allBanner", auth.getBanner);
     app.get("/api/v1/Banner/getBannerById/:id", auth.getBannerById);
     app.delete("/api/v1/Banner/deleteBanner/:id", [authJwt.verifyToken], auth.DeleteBanner);

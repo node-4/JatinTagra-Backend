@@ -345,6 +345,39 @@ exports.AddBanner = async (req, res) => {
         return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };
+exports.updateBanner = async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        const updatedData = {};
+
+        if (req.file) {
+            updatedData.image = req.file.path;
+        }
+
+        if (req.body.desc) {
+            updatedData.desc = req.body.desc;
+        }
+
+        if (req.body.categoryId) {
+            const category = await Category.findById(req.body.categoryId);
+            if (!category) {
+                return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
+            }
+            updatedData.category = category._id;
+        }
+
+        const updatedBanner = await banner.findByIdAndUpdate(bannerId, { $set: updatedData }, { new: true });
+
+        if (!updatedBanner) {
+            return res.status(404).json({ message: "Banner Not Found", status: 404, data: {} });
+        }
+
+        return res.status(200).json({ status: 200, message: "Banner updated", data: updatedBanner });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: 500, message: "Server error.", data: {} });
+    }
+};
 exports.getBanner = async (req, res) => {
     try {
         const Banner = await banner.find();
