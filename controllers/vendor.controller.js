@@ -296,8 +296,9 @@ exports.addMoney = async (req, res) => {
 exports.removeMoney = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user._id, });
+                console.log("h", data);
                 if (data) {
-                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet - parseInt(req.body.balance) } }, { new: true });
+                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet - parseInt(req.body.balance) } }, { new: true });
                         if (update) {
                                 let obj = {
                                         user: req.user._id,

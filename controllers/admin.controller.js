@@ -1135,21 +1135,21 @@ exports.getPenaltiesForDriver = async (req, res) => {
 
 
 exports.verifyVendor = async (req, res) => {
-  try {
-    const vendorId = req.params.vendorId;
+    try {
+        const vendorId = req.params.vendorId;
 
-    const vendor = await ve.findById(vendorId);
+        const vendor = await ve.findById(vendorId);
 
-    if (!vendor) {
-      return res.status(404).json({ message: "Vendor not found", status: 404, data: {} });
+        if (!vendor) {
+            return res.status(404).json({ message: "Vendor not found", status: 404, data: {} });
+        }
+
+        vendor.status = 'Verified';
+        await vendor.save();
+
+        return res.status(200).json({ message: "Vendor account verified", status: 200, data: vendor });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server error: " + error.message, status: 500, data: {} });
     }
-
-    vendor.status = 'Verified';
-    await vendor.save();
-
-    return res.status(200).json({ message: "Vendor account verified", status: 200, data: vendor });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error: " + error.message, status: 500, data: {} });
-  }
 };
