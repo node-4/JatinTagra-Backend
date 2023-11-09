@@ -181,7 +181,8 @@ exports.updateProfile = async (req, res) => {
                         if (req.body.password != (null || undefined)) {
                                 password = bcrypt.hashSync(req.body.password, 8);
                         }
-                        req.body.shopOpen = req.body.shopOpen || user.shopOpen;
+                        req.body.shopOpen = req.body.shopOpen !== null && req.body.shopOpen !== undefined ? req.body.shopOpen : user.shopOpen;
+                        // req.body.shopOpen = req.body.shopOpen || user.shopOpen;
                         req.body.fullName = req.body.fullName || user.fullName;
                         req.body.password = password || user.password;
                         let update = await User.findByIdAndUpdate(user._id, { $set: req.body }, { new: true, });
@@ -296,7 +297,6 @@ exports.addMoney = async (req, res) => {
 exports.removeMoney = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user._id, });
-                console.log("h", data);
                 if (data) {
                         let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet - parseInt(req.body.balance) } }, { new: true });
                         if (update) {
@@ -882,25 +882,24 @@ exports.getComplainbyId = async (req, res, next) => {
 };
 exports.getMetric = async (req, res, next) => {
         try {
-                let query = { vendorId: req.user._id };
                 if ((req.query.fromDate != (null || undefined)) && (req.query.toDate != (null || undefined))) {
                         query.$and = [
                                 { createdAt: { $gte: req.query.fromDate } },
                                 { createdAt: { $lte: req.query.toDate } },
                         ]
                 }
-                const orders = await orderModel.find({ query, preparingStatus: "New" }).count()
+                const orders = await orderModel.find({ vendorId: req.user._id, preparingStatus: "New" }).count()
                 console.log("1", orders);
-                const orders1 = await orderModel.find({ query, preparingStatus: "Preparing" }).count()
+                const orders1 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "Preparing" }).count()
                 console.log("2", orders);
 
-                const orders2 = await orderModel.find({ query, preparingStatus: "Ready" }).count()
+                const orders2 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "Ready" }).count()
                 console.log("3", orders);
 
-                const orders3 = await orderModel.find({ query, preparingStatus: "out_for_delivery" }).count()
+                const orders3 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "out_for_delivery" }).count()
                 console.log("4", orders);
 
-                const orders4 = await orderModel.find({ query, preparingStatus: "delivered" }).count()
+                const orders4 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "delivered" }).count()
                 console.log("5", orders);
                 //enum: ["pending", "Reject", "New", "Preparing", "Ready", "out_for_delivery", "delivered"],
                 let dashboard = {
