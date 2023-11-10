@@ -635,6 +635,7 @@ exports.checkout = async (req, res) => {
 //                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
 //         }
 // };
+
 exports.placeOrder = async (req, res) => {
         try {
                 const findUserOrder = await userOrder.findOne({ orderId: req.params.orderId });
@@ -820,3 +821,98 @@ const reffralCode = async () => {
         }
         return OTP;
 }
+
+
+exports.getProductsdsQuery = async (req, res) => {
+        try {
+                const product = await Product.find({});
+                if (product.length == 0) {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                } else {
+                        for (let i = 0; i < 10; i++) {
+                                let update = await Product.findByIdAndUpdate({ _id: product[i]._id }, { $set: { dealOfTheDay: true } }, { new: true });
+                        }
+                        return res.status(200).json({ message: "Product data found.", status: 200, data: product });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+
+
+    
+
+// exports.getProductsDealOfTheDay = async (req, res) => {
+//         try {
+//             const products = await Product.find({ dealOfTheDay: true })
+            
+//             if (products.length === 0) {
+//                 return res.status(404).json({ message: "No data found", data: {} });
+//             } else {
+//                 const vendorTotals = {};
+    
+//                 products.forEach(product => {
+//                     const vendorId = product.vendorId.toString();
+    
+//                     if (!vendorTotals[vendorId]) {
+//                         vendorTotals[vendorId] = 0;
+//                     }
+    
+//                     vendorTotals[vendorId] += product.quantity || 0;
+//                 });
+    
+//                 const result = products.map(product => ({
+//                     ...product.toObject(),
+//                     totalItemsForVendor: vendorTotals[product.vendorId._id.toString()] || 0
+//                 }));
+    
+//                 return res.status(200).json({ message: "Product data found.", status: 200, data: result });
+//             }
+//         } catch (error) {
+//             console.log(error);
+//             return res.status(501).send({ message: "Server error.", data: {} });
+//         }
+//     };
+
+
+
+exports.getProductsDealOfTheDay = async (req, res) => {
+        try {
+            const products = await Product.find({ dealOfTheDay: true })
+    
+            if (products.length === 0) {
+                return res.status(404).json({ message: "No data found", data: {} });
+            } else {
+                const vendorTotals = {};
+    
+                products.forEach(product => {
+                    const vendorId = product.vendorId.toString();
+    
+                    if (!vendorTotals[vendorId]) {
+                        vendorTotals[vendorId] = {
+                            totalItemsForVendor: 0,
+                            products: [],
+                        };
+                    }
+    
+                    vendorTotals[vendorId].totalItemsForVendor += product || 0;
+                    vendorTotals[vendorId].products.push({
+                        ...product.toObject(),
+                    });
+                });
+    
+                const result = Object.keys(vendorTotals).map(vendorId => ({
+                    vendorId,
+                    totalItemsForVendor: vendorTotals[vendorId].totalItemsForVendor,
+                    products: vendorTotals[vendorId].products,
+                }));
+    
+                return res.status(200).json({ message: "Product data found.", status: 200, data: result });
+            }
+        } catch (error) {
+            console.log(error);
+            return res.status(501).send({ message: "Server error.", data: {} });
+        }
+    };
+    
