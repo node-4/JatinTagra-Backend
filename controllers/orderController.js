@@ -737,7 +737,7 @@ exports.getAllOrders = async (req, res, next) => {
 };
 exports.getOrders = async (req, res, next) => {
         try {
-                const orders = await orderModel.find({ userId: req.user._id, orderStatus: "confirmed", returnStatus: "" });
+                const orders = await orderModel.find({ userId: req.user._id, orderStatus: "confirmed", returnStatus: "" }).populate('productId');
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
@@ -841,78 +841,72 @@ exports.getProductsdsQuery = async (req, res) => {
 };
 
 
-    
-
-// exports.getProductsDealOfTheDay = async (req, res) => {
-//         try {
-//             const products = await Product.find({ dealOfTheDay: true })
-            
-//             if (products.length === 0) {
-//                 return res.status(404).json({ message: "No data found", data: {} });
-//             } else {
-//                 const vendorTotals = {};
-    
-//                 products.forEach(product => {
-//                     const vendorId = product.vendorId.toString();
-    
-//                     if (!vendorTotals[vendorId]) {
-//                         vendorTotals[vendorId] = 0;
-//                     }
-    
-//                     vendorTotals[vendorId] += product.quantity || 0;
-//                 });
-    
-//                 const result = products.map(product => ({
-//                     ...product.toObject(),
-//                     totalItemsForVendor: vendorTotals[product.vendorId._id.toString()] || 0
-//                 }));
-    
-//                 return res.status(200).json({ message: "Product data found.", status: 200, data: result });
-//             }
-//         } catch (error) {
-//             console.log(error);
-//             return res.status(501).send({ message: "Server error.", data: {} });
-//         }
-//     };
-
-
-
 exports.getProductsDealOfTheDay = async (req, res) => {
         try {
-            const products = await Product.find({ dealOfTheDay: true })
-    
-            if (products.length === 0) {
-                return res.status(404).json({ message: "No data found", data: {} });
-            } else {
-                const vendorTotals = {};
-    
-                products.forEach(product => {
-                    const vendorId = product.vendorId.toString();
-    
-                    if (!vendorTotals[vendorId]) {
-                        vendorTotals[vendorId] = {
-                            totalItemsForVendor: 0,
-                            products: [],
-                        };
-                    }
-    
-                    vendorTotals[vendorId].totalItemsForVendor += product || 0;
-                    vendorTotals[vendorId].products.push({
-                        ...product.toObject(),
-                    });
-                });
-    
-                const result = Object.keys(vendorTotals).map(vendorId => ({
-                    vendorId,
-                    totalItemsForVendor: vendorTotals[vendorId].totalItemsForVendor,
-                    products: vendorTotals[vendorId].products,
-                }));
-    
-                return res.status(200).json({ message: "Product data found.", status: 200, data: result });
-            }
+                const products = await Product.find({ dealOfTheDay: true })
+
+                if (products.length === 0) {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                } else {
+                        const vendorProducts = {};
+
+                        products.forEach(product => {
+                                const vendorId = product.vendorId.toString();
+
+                                if (!vendorProducts[vendorId]) {
+                                        vendorProducts[vendorId] = {
+                                                products: [],
+                                                productCount: 0,
+                                        };
+                                }
+
+                                vendorProducts[vendorId].products.push({
+                                        ...product.toObject(),
+                                });
+
+                                vendorProducts[vendorId].productCount += 1;
+                        });
+
+                        const result = Object.keys(vendorProducts).map(vendorId => ({
+                                vendorId,
+                                products: vendorProducts[vendorId].products,
+                                productCount: vendorProducts[vendorId].productCount,
+                        }));
+
+                        return res.status(200).json({ message: "Product data found.", status: 200, data: result });
+                }
         } catch (error) {
-            console.log(error);
-            return res.status(501).send({ message: "Server error.", data: {} });
+                console.log(error);
+                return res.status(501).send({ message: "Server error.", data: {} });
         }
-    };
-    
+};
+
+
+
+exports.getOrderHistory = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found", data: {} });
+        }
+
+        const orders = await orderModel.find({ userId: user._id });
+
+        const orderedProducts = [];
+        for (const order of orders) {
+            const products = await Product.find({ orderId: order.orderId });
+
+            orderedProducts.push({
+                orderDetails: order.toObject(),
+                products: products.map(product => product.toObject()),
+            });
+        }
+
+        return res.status(200).json({ status: 200, message: "Order history found.", data: orderedProducts });
+    } catch (error) {
+        console.error(error);
+        return res.status(501).json({ status: 501, message: "Server error.", data: {} });
+    }
+};
+

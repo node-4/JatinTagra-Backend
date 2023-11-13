@@ -18,6 +18,8 @@ module.exports = (app) => {
     app.get("/api/v1/user/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
     app.get("/api/v1/user/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
     app.post("/api/v1/user/addComplain/:orderId", [authJwt.verifyToken], auth.addComplain);
-    app.post("/api/v1/user/update/ProductQuery",  auth.getProductsdsQuery);
-    app.get("/api/v1/user/getProductsDealOfTheDay",  auth.getProductsDealOfTheDay);
+    app.post("/api/v1/user/update/ProductQuery", auth.getProductsdsQuery);
+    app.get("/api/v1/user/getProductsDealOfTheDay", [authJwt.verifyToken], auth.getProductsDealOfTheDay);
+    app.get('/api/v1/user/order-history', [authJwt.verifyToken], auth.getOrderHistory);
+
 };
