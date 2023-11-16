@@ -45,7 +45,7 @@ exports.getCart = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
-exports.addToCart = async (req, res) => {
+exports.addToCart1 = async (req, res) => {
         try {
                 let userData = await User.findOne({ _id: req.user._id, userType: "USER" });
                 if (!userData) {
@@ -202,6 +202,90 @@ exports.addToCart = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+
+exports.addToCart = async (req, res) => {
+        try {
+                const userData = await User.findOne({ _id: req.user._id, userType: "USER" });
+
+                if (!userData) {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+
+                const findCart = await Cart.findOne({ userId: userData._id }) || new Cart({ userId: userData._id });
+
+                const findProduct = await Product.findById(req.body.productId);
+
+                if (!findProduct) {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                }
+
+                const shippingCost = findProduct.packageCharges || 0;
+
+                const findDiscount = await Discount.findOne({
+                        $or: [{ productId: findProduct._id }, { category: findProduct.category }, { vendorId: findProduct.vendorId }]
+                });
+
+                req.body.discountId = findDiscount ? findDiscount._id : null;
+
+                const price = findProduct.discountActive ? findProduct.discountPrice : findProduct.price;
+                const discount = findProduct.discountActive ? Number(findProduct.price - findProduct.discountPrice).toFixed(2) : 0;
+
+                const total = price * req.body.quantity;
+                const product = {
+                        vendorId: findProduct.vendorId,
+                        category: findProduct.category,
+                        productId: findProduct._id,
+                        discountId: req.body.discountId,
+                        productPrice: price,
+                        discount: discount,
+                        gst: findProduct.gst * req.body.quantity,
+                        cGst: findProduct.cGst * req.body.quantity,
+                        sGst: findProduct.sGst * req.body.quantity,
+                        quantity: req.body.quantity,
+                        total: total,
+                };
+
+                if (findCart.products.some(cartProduct => cartProduct.productId.toString() === req.body.productId)) {
+                        return res.status(409).json({ status: 409, message: "Product already exists in cart." });
+                }
+
+                findCart.products.push(product);
+
+                const updateCart = await findCart.save();
+
+                const { totalAmount, tax, discounts } = updateCart.products.reduce((acc, cartProduct) => {
+                        acc.totalAmount += cartProduct.total;
+                        acc.tax += cartProduct.gst;
+                        acc.discounts += cartProduct.discount;
+                        return acc;
+                }, { totalAmount: 0, tax: 0, discounts: 0 });
+
+                const paidAmount = Number(totalAmount + tax + shippingCost).toFixed(2);
+
+                const updatedCart = await Cart.findByIdAndUpdate(
+                        { _id: findCart._id },
+                        {
+                                $set: {
+                                        totalAmount: totalAmount,
+                                        discount: discounts,
+                                        paidAmount: paidAmount,
+                                        tax: tax,
+                                        shipping: shippingCost,
+                                        totalItem: updateCart.products.length,
+                                },
+                        },
+                        { new: true }
+                );
+
+                return res.status(200).json({ status: 200, message: "Product successfully added to cart.", data: updatedCart });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Something went wrong' });
+        }
+};
+
+
+
 exports.updateQuantity = async (req, res) => {
         try {
                 const user = await User.findById(req.user._id);
@@ -307,13 +391,13 @@ exports.deleteProductfromCart = async (req, res) => {
                                         let update = await Cart.findByIdAndUpdate({ _id: findCart._id }, { $set: { products: products } }, { new: true });
                                         if (update) {
                                                 let tax = 0, shipping = 0, discounts = 0, totalAmount = 0;
-                                                for (let i = 0; i < updateCart.products.length; i++) {
-                                                        totalAmount = totalAmount + updateCart.products[i].total;
-                                                        tax = tax + updateCart.products[i].gst;
-                                                        discounts = discounts + updateCart.products[i].discount
+                                                for (let i = 0; i < update.products.length; i++) {
+                                                        totalAmount = totalAmount + update.products[i].total;
+                                                        tax = tax + update.products[i].gst;
+                                                        discounts = discounts + update.products[i].discount
                                                 }
                                                 let paidAmount = Number(totalAmount + tax + shipping).toFixed(2);
-                                                let update1 = await Cart.findByIdAndUpdate({ _id: update._id }, { $set: { totalAmount: totalAmount, discount: discounts, paidAmount: paidAmount, tax: tax, shipping: shipping, totalItem: updateCart.products.length } }, { new: true });
+                                                let update1 = await Cart.findByIdAndUpdate({ _id: update._id }, { $set: { totalAmount: totalAmount, discount: discounts, paidAmount: paidAmount, tax: tax, shipping: shipping, totalItem: update.products.length } }, { new: true });
                                                 return res.status(200).json({ status: 200, message: "Product delete from cart Successfully.", data: update1 })
                                         }
                                 }
@@ -551,6 +635,7 @@ exports.checkout = async (req, res) => {
 //                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
 //         }
 // };
+
 exports.placeOrder = async (req, res) => {
         try {
                 const findUserOrder = await userOrder.findOne({ orderId: req.params.orderId });
@@ -652,7 +737,7 @@ exports.getAllOrders = async (req, res, next) => {
 };
 exports.getOrders = async (req, res, next) => {
         try {
-                const orders = await orderModel.find({ userId: req.user._id, orderStatus: "confirmed", returnStatus: "" });
+                const orders = await orderModel.find({ userId: req.user._id, orderStatus: "confirmed", returnStatus: "" }).populate('productId');
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
@@ -736,3 +821,92 @@ const reffralCode = async () => {
         }
         return OTP;
 }
+
+
+exports.getProductsdsQuery = async (req, res) => {
+        try {
+                const product = await Product.find({});
+                if (product.length == 0) {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                } else {
+                        for (let i = 0; i < 10; i++) {
+                                let update = await Product.findByIdAndUpdate({ _id: product[i]._id }, { $set: { dealOfTheDay: true } }, { new: true });
+                        }
+                        return res.status(200).json({ message: "Product data found.", status: 200, data: product });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ message: "server error.", data: {}, });
+        }
+};
+
+
+exports.getProductsDealOfTheDay = async (req, res) => {
+        try {
+                const products = await Product.find({ dealOfTheDay: true })
+
+                if (products.length === 0) {
+                        return res.status(404).json({ message: "No data found", data: {} });
+                } else {
+                        const vendorProducts = {};
+
+                        products.forEach(product => {
+                                const vendorId = product.vendorId.toString();
+
+                                if (!vendorProducts[vendorId]) {
+                                        vendorProducts[vendorId] = {
+                                                products: [],
+                                                productCount: 0,
+                                        };
+                                }
+
+                                vendorProducts[vendorId].products.push({
+                                        ...product.toObject(),
+                                });
+
+                                vendorProducts[vendorId].productCount += 1;
+                        });
+
+                        const result = Object.keys(vendorProducts).map(vendorId => ({
+                                vendorId,
+                                products: vendorProducts[vendorId].products,
+                                productCount: vendorProducts[vendorId].productCount,
+                        }));
+
+                        return res.status(200).json({ message: "Product data found.", status: 200, data: result });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ message: "Server error.", data: {} });
+        }
+};
+
+
+
+exports.getOrderHistory = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found", data: {} });
+        }
+
+        const orders = await orderModel.find({ userId: user._id });
+
+        const orderedProducts = [];
+        for (const order of orders) {
+            const products = await Product.find({ orderId: order.orderId });
+
+            orderedProducts.push({
+                orderDetails: order.toObject(),
+                products: products.map(product => product.toObject()),
+            });
+        }
+
+        return res.status(200).json({ status: 200, message: "Order history found.", data: orderedProducts });
+    } catch (error) {
+        console.error(error);
+        return res.status(501).json({ status: 501, message: "Server error.", data: {} });
+    }
+};
+

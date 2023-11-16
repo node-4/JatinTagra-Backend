@@ -109,6 +109,10 @@ const productSchema = mongoose.Schema({
                 type: Date,
                 default: Date.now,
         },
+        dealOfTheDay: {
+                type: Boolean,
+                default: false,
+        },
 });
 
 productSchema.plugin(mongoosePaginate);

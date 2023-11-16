@@ -1,10 +1,11 @@
 const { validateUser } = require("../middlewares");
 const auth = require("../controllers/admin.controller");
 const { authJwt, authorizeRoles } = require("../middlewares");
-const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload } = require('../middlewares/imageUpload')
+const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload, bannerUpload, videoImage } = require('../middlewares/imageUpload')
 module.exports = (app) => {
     app.post("/api/v1/admin/registration", auth.registration);
     app.post("/api/v1/admin/login", auth.signin);
+    app.post("/api/v1/admin/resetPassword", auth.resetPassword);
     app.put("/api/v1/admin/update", [authJwt.verifyToken], auth.update);
     app.post("/api/v1/Category/addCategory", [authJwt.verifyToken], categoryUpload.single('image'), auth.createCategory);
     app.get("/api/v1/Category/allCategory", auth.getCategories);
@@ -20,7 +21,8 @@ module.exports = (app) => {
     app.get("/api/v1/SubCategory/allSubcategoryById/:categoryId", auth.getSubCategoryByCategoryId);
     app.get('/api/v1/admin/help/getAllQuery', [authJwt.verifyToken], auth.getAllHelpandSupport);
     app.delete('/api/v1/admin/help/delete/:id', [authJwt.verifyToken], auth.DeleteHelpandSupport);
-    app.post("/api/v1/Banner/AddBanner", [authJwt.verifyToken], auth.AddBanner);
+    app.post("/api/v1/Banner/AddBanner", [authJwt.verifyToken], bannerUpload.single('image'), auth.AddBanner);
+    app.put("/api/v1/updateBanners/:id", [authJwt.verifyToken], bannerUpload.single('image'), auth.updateBanner);
     app.get("/api/v1/Banner/allBanner", auth.getBanner);
     app.get("/api/v1/Banner/getBannerById/:id", auth.getBannerById);
     app.delete("/api/v1/Banner/deleteBanner/:id", [authJwt.verifyToken], auth.DeleteBanner);
@@ -42,7 +44,7 @@ module.exports = (app) => {
     app.delete("/api/v1/PreferedArea/deletePreferedArea/:id", [authJwt.verifyToken], auth.DeletePreferedArea);
     app.put("/api/v1/admin/driverOrderAmount/:id", auth.driverOrderAmount)
     app.put("/api/v1/admin/driverbonusOrderAmount/:id", auth.driverbonusOrderAmount)
-    app.get("/api/v1/admin/allOrders", [authJwt.verifyToken], auth.getOrders);
+    app.get("/api/v1/admin/allOrders", /*[authJwt.verifyToken],*/ auth.getOrders);
     app.get("/api/v1/admin/alldeliveryOrders", [authJwt.verifyToken], auth.getdeliveryOrders);
     app.get("/api/v1/admin/getcancelReturnOrder", [authJwt.verifyToken], auth.getcancelReturnOrder);
     app.get("/api/v1/admin/allComplaint", [authJwt.verifyToken], auth.getComplaint);
@@ -53,4 +55,20 @@ module.exports = (app) => {
     app.get("/api/v1/admin/getAllVendor", auth.getAllVendor);
     app.get("/api/v1/admin/viewUser/:id", auth.viewUser);
     app.delete("/api/v1/admin/deleteUser/:id", [authJwt.verifyToken], auth.deleteUser);
+    app.put('/api/v1/admin/user/verify-admin/:userId', [authJwt.verifyToken], auth.verifyAdminStatus);
+    app.post('/api/v1/admin/announcement/create', [authJwt.verifyToken], auth.createAnnouncement);
+    app.get('/api/v1/admin/announcement/all', [authJwt.verifyToken], auth.getAllAnnouncements);
+    app.get('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.getAnnouncementById);
+    app.put('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.updateAnnouncement);
+    app.delete('/api/v1/admin/announcement/:announcementId', [authJwt.verifyToken], auth.deleteAnnouncement);
+    app.post('/api/v1/admin/videos', [authJwt.verifyToken], videoImage.single('image'), auth.createVideo);
+    app.get('/api/v1/admin/videos', /*[authJwt.verifyToken],*/ auth.getAllVideos);
+    app.get('/api/v1/admin/earnings/:driverId/:bonusType', [authJwt.verifyToken], auth.getDriverEarningsByBonusType);
+    app.get('/api/v1/admin/earnings/:driverId/:orderType', [authJwt.verifyToken], auth.getDriverEarningsByOrderType);
+    app.post('/api/v1/admin/driver/penalties/add', [authJwt.verifyToken], auth.addPenalty);
+    app.get('/api/v1/admin/driver/penalties/:driverId', [authJwt.verifyToken], auth.getPenaltiesForDriver);
+    app.put('/api/v1/admin/verify-vendor/:vendorId', [authJwt.verifyToken], auth.verifyVendor);
+
+
+
 };

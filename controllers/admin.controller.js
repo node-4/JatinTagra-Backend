@@ -27,6 +27,12 @@ const deliveryOrder = require("../models/orders/deliveryOrder");
 const cancelReturnOrder = require("../models/orders/cancelReturnOrder");
 const complaint = require("../models/complaint");
 const driverEarning = require("../models/driverEarning");
+const Announcement = require('../models/annoucmentModel');
+const Video = require('../models/wtachVideoModel');
+const Penalty = require('../models/penaltyModel');
+
+
+
 exports.registration = async (req, res) => {
     const { phone, email } = req.body;
     try {
@@ -71,6 +77,26 @@ exports.signin = async (req, res) => {
         return res.status(500).send({ message: "Server error" + error.message });
     }
 };
+
+exports.resetPassword = async (req, res) => {
+    const { phone, email } = req.body;
+    try {
+        const user = await User.findOne({ phone: phone, email: email, userType: "ADMIN" });
+        if (!user) {
+            return res.status(404).send({ status: 404, message: "User not found" });
+        }
+        if (req.body.newPassword == req.body.confirmPassword) {
+            const updated = await User.findOneAndUpdate({ _id: user._id }, { $set: { password: bcrypt.hashSync(req.body.newPassword) } }, { new: true });
+            return res.status(200).send({ status: 200, message: "Password update successfully.", data: updated, });
+        } else {
+            return res.status(501).send({ status: 501, message: "Password Not matched.", data: {}, });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ status: 500, message: "Server error" + error.message });
+    }
+};
+
 exports.update = async (req, res) => {
     try {
         const { fullName, firstName, lastName, email, phone, password } = req.body;
@@ -161,6 +187,7 @@ exports.createSubCategory = async (req, res) => {
 };
 exports.getSubCategoryForAdmin = async (req, res) => {
     try {
+        console.log("123");
         const data = await subCategory.find({}).populate('categoryId');
         if (data.length > 0) {
             return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
@@ -187,12 +214,12 @@ exports.paginateSubCategoriesSearch = async (req, res) => {
         if ((fromDate == 'null') && (toDate != 'null')) {
             query.createdAt = { $lte: toDate };
         }
-        if ((fromDate != 'null') && (toDate != 'null')) {
-            query.$and = [
-                { createdAt: { $gte: fromDate } },
-                { createdAt: { $lte: toDate } },
-            ]
-        }
+        // if ((fromDate != 'null') && (toDate != 'null')) {
+        //     query.$and = [
+        //         { createdAt: { $gte: fromDate } },
+        //         { createdAt: { $lte: toDate } },
+        //     ]
+        // }
         let options = {
             page: Number(page) || 1,
             limit: Number(limit) || 10,
@@ -200,9 +227,11 @@ exports.paginateSubCategoriesSearch = async (req, res) => {
             populate: ('categoryId')
         };
         let data = await subCategory.paginate(query, options);
+        console.log("data", data);
         return res.status(200).json({ status: 200, message: "Sub Category data found.", data: data });
 
     } catch (err) {
+        console.log(err);
         return res.status(500).send({ msg: "internal server error ", error: err.message, });
     }
 };
@@ -229,7 +258,7 @@ exports.getSubCategory = async (req, res) => {
 };
 exports.getIdSubCategory = async (req, res) => {
     try {
-        const data = await subCategory.findById(req.params.id);
+        const data = await subCategory.findById(req.params.id).populate('categoryId');
         if (!data || data.length === 0) {
             return res.status(400).send({ msg: "not found" });
         }
@@ -303,12 +332,50 @@ exports.AddBanner = async (req, res) => {
         if (!category) {
             return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
         }
-        const data = { image: req.body.image, desc: req.body.desc, category: category._id }
+        let image;
+        if (req.file) {
+            image = req.file.path
+        }
+
+        const data = { image: image, desc: req.body.desc, category: category._id }
         const Data = await banner.create(data);
         return res.status(200).json({ status: 200, message: "Banner is Addded ", data: Data })
     } catch (err) {
         console.log(err);
         return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.updateBanner = async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        const updatedData = {};
+
+        if (req.file) {
+            updatedData.image = req.file.path;
+        }
+
+        if (req.body.desc) {
+            updatedData.desc = req.body.desc;
+        }
+
+        if (req.body.categoryId) {
+            const category = await Category.findById(req.body.categoryId);
+            if (!category) {
+                return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
+            }
+            updatedData.category = category._id;
+        }
+
+        const updatedBanner = await banner.findByIdAndUpdate(bannerId, { $set: updatedData }, { new: true });
+
+        if (!updatedBanner) {
+            return res.status(404).json({ message: "Banner Not Found", status: 404, data: {} });
+        }
+
+        return res.status(200).json({ status: 200, message: "Banner updated", data: updatedBanner });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: 500, message: "Server error.", data: {} });
     }
 };
 exports.getBanner = async (req, res) => {
@@ -354,10 +421,11 @@ exports.DeleteHelpandSupport = async (req, res) => {
         if (!findHelp) {
             return res.status(404).json({ status: 404, message: "No data found", data: {} });
         } else {
-            await helpandSupport.findOneAndDelete({ user: req.params.id })
+            await helpandSupport.findOneAndDelete({ _id: req.params.id })
             return res.status(200).json({ status: 200, message: "Data delete successfully.", data: {} })
         }
     } catch (err) {
+        console.log(err);
         return res.status(501).send({ status: 501, message: "server error.", data: {} });
     }
 };
@@ -625,7 +693,26 @@ exports.driverbonusOrderAmount = async (req, res) => {
 };
 exports.getOrders = async (req, res, next) => {
     try {
-        const orders = await orderModel.find({ orderStatus: "confirmed", });
+        const orders = await orderModel.find({ orderStatus: "confirmed", })
+            .populate({
+                path: 'userId',
+                // select: 'fullName',
+            })
+            .populate({
+                path: 'vendorId',
+                // select: 'fullName phone email'
+            })
+            .populate({
+                path: 'category',
+
+            })
+            .populate({
+                path: 'productId',
+            })
+            .populate({
+                path: 'discountId',
+            });
+
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
         }
@@ -637,7 +724,13 @@ exports.getOrders = async (req, res, next) => {
 };
 exports.getcancelReturnOrder = async (req, res, next) => {
     try {
-        const orders = await cancelReturnOrder.find({}).populate('Orders');
+        const orders = await cancelReturnOrder.find({}).populate('Orders userId vendorId').populate({
+            path: 'Orders',
+            populate: {
+                path: 'productId',
+                model: 'Product',
+            },
+        });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
         }
@@ -715,7 +808,23 @@ exports.deleteUser = async (req, res) => {
 };
 exports.getComplaint = async (req, res, next) => {
     try {
-        const orders = await complaint.find({}).populate('userId vendorId Orders Orders.$.productId')
+        const orders = await complaint.find({}).populate('userId vendorId Orders Orders.$.productId').populate({
+            path: 'Orders',
+            populate: [
+                {
+                    path: 'productId',
+                    model: 'Product',
+                },
+                {
+                    path: 'vendorId',
+                    model: 'user',
+                },
+                {
+                    path: 'category',
+                    model: 'Category',
+                },
+            ],
+        });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Complain not found", data: {} });
         }
@@ -738,7 +847,19 @@ exports.allTransactionUser = async (req, res) => {
 };
 exports.getdeliveryOrders = async (req, res, next) => {
     try {
-        const orders = await deliveryOrder.find({}).populate('Orders userId driverId');
+        const orders = await deliveryOrder.find({}).populate('Orders userId driverId').populate({
+            path: 'Orders',
+            populate: [
+                {
+                    path: 'productId',
+                    model: 'Product',
+                },
+                {
+                    path: 'vendorId',
+                    model: 'vendorDetails',
+                },
+            ],
+        });
         if (orders.length == 0) {
             return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
         }
@@ -768,5 +889,267 @@ exports.getProducts = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(501).send({ message: "server error.", data: {}, });
+    }
+};
+exports.verifyAdminStatus = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        const { isAdminVerify } = req.body
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.isAdminVerify = isAdminVerify;;
+        await user.save();
+
+        return res.status(200).json({ success: true, message: 'Admin status verified' });
+    } catch (error) {
+        console.error('Error verifying admin status:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+exports.createAnnouncement = async (req, res) => {
+    try {
+        const { content } = req.body;
+        const announcement = new Announcement({ content });
+        const newAnnouncement = await announcement.save();
+
+        return res.status(201).json({
+            status: 201,
+            message: 'Announcement created successfully',
+            data: newAnnouncement,
+        });
+    } catch (error) {
+        console.error('Error creating announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.getAllAnnouncements = async (req, res) => {
+    try {
+        const announcements = await Announcement.find().sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcements retrieved successfully',
+            data: announcements,
+        });
+    } catch (error) {
+        console.error('Error fetching announcements:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.getAnnouncementById = async (req, res) => {
+    try {
+        const { announcementId } = req.params;
+        const announcement = await Announcement.findById(announcementId);
+
+        if (!announcement) {
+            return res.status(404).json({
+                success: false,
+                message: 'Announcement not found',
+            });
+        }
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcement retrieved successfully',
+            data: announcement,
+        });
+    } catch (error) {
+        console.error('Error fetching announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.updateAnnouncement = async (req, res) => {
+    try {
+        const { announcementId } = req.params;
+        const { content } = req.body;
+        const announcement = await Announcement.findByIdAndUpdate(announcementId, { content }, { new: true });
+
+        if (!announcement) {
+            return res.status(404).json({
+                success: false,
+                message: 'Announcement not found',
+            });
+        }
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcement updated successfully',
+            data: announcement,
+        });
+    } catch (error) {
+        console.error('Error updating announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+exports.deleteAnnouncement = async (req, res) => {
+    try {
+        const { announcementId } = req.params;
+        const announcement = await Announcement.findByIdAndRemove(announcementId);
+
+        if (!announcement) {
+            return res.status(404).json({
+                success: false,
+                message: 'Announcement not found',
+            });
+        }
+
+        return res.status(200).json({
+            status: 200,
+            success: true,
+            message: 'Announcement deleted successfully',
+        });
+    } catch (error) {
+        console.error('Error deleting announcement:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
+
+exports.createVideo = async (req, res) => {
+    try {
+        const { videoLink, description } = req.body;
+        let image;
+        if (req.file) {
+            image = req.file.path
+        }
+
+        const video = new Video({ videoLink, image: image, description });
+        await video.save();
+        res.status(201).json({ status: 201, message: 'Video created successfully', data: video });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 500, message: 'Error creating video', error: error.message });
+    }
+};
+
+
+exports.getAllVideos = async (req, res) => {
+    try {
+        const videos = await Video.find();
+        res.status(200).json({ status: 200, message: 'Videos retrieved successfully', data: videos });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: 500, message: 'Error fetching videos', error: error.message });
+    }
+};
+
+
+exports.getDriverEarningsByBonusType = async (req, res) => {
+    try {
+        const driverId = req.params.driverId;
+        const bonusType = req.params.bonusType;
+
+        const earnings = await driverEarning.find({ driverId, type: bonusType });
+
+        if (earnings.length === 0) {
+            return res.status(404).json({ status: 404, message: 'Earnings not found', data: [] });
+        }
+
+        return res.status(200).json({ status: 200, message: 'Driver earnings by bonus type', data: earnings });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+    }
+};
+
+
+exports.getDriverEarningsByOrderType = async (req, res) => {
+    try {
+        const driverId = req.params.driverId;
+        const orderType = req.params.orderType;
+
+        const earnings = await driverEarning.find({ driverId, type: orderType });
+
+        if (earnings.length === 0) {
+            return res.status(404).json({ status: 404, message: 'Earnings not found', data: [] });
+        }
+
+        return res.status(200).json({ status: 200, message: 'Driver earnings by bonus type', data: earnings });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ status: 500, message: 'Server error', data: {} });
+    }
+};
+
+
+
+exports.addPenalty = async (req, res) => {
+    try {
+        const { driverId, reason, amount } = req.body;
+
+        const penalty = new Penalty({ driver: driverId, reason, amount });
+        await penalty.save();
+
+        return res.status(201).json({ message: 'Penalty added successfully', data: penalty });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+
+exports.getPenaltiesForDriver = async (req, res) => {
+    try {
+        const { driverId } = req.params;
+
+        const penalties = await Penalty.find({ driver: driverId });
+
+        return res.status(200).json({ message: 'Penalties for the driver', data: penalties });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+
+exports.verifyVendor = async (req, res) => {
+    try {
+        const vendorId = req.params.vendorId;
+
+        const vendor = await ve.findById(vendorId);
+
+        if (!vendor) {
+            return res.status(404).json({ message: "Vendor not found", status: 404, data: {} });
+        }
+
+        vendor.status = 'Verified';
+        await vendor.save();
+
+        return res.status(200).json({ message: "Vendor account verified", status: 200, data: vendor });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server error: " + error.message, status: 500, data: {} });
     }
 };

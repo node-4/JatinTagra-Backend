@@ -111,6 +111,12 @@ exports.signin = async (req, res) => {
                                 .status(404)
                                 .send({ message: "user not found ! not registered" });
                 }
+
+                if (user.isAdminVerify !== true) {
+                        return res.status(403).json({ message: "Wait for  account verification", status: 403, data: {} });
+
+                }
+
                 const isValidPassword = bcrypt.compareSync(password, user.password);
                 if (!isValidPassword) {
                         return res.status(401).send({ message: "Wrong password" });
@@ -118,7 +124,10 @@ exports.signin = async (req, res) => {
                 const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
                         expiresIn: authConfig.accessTokenTime,
                 });
-                return res.status(201).send({ data: user, accessToken: accessToken });
+                return res.status(200).send({
+                        status: 200,
+                        message: "Sign-in successful", data: user, accessToken: accessToken
+                });
         } catch (error) {
                 console.error(error);
                 return res.status(500).send({ message: "Server error" + error.message });
@@ -172,7 +181,8 @@ exports.updateProfile = async (req, res) => {
                         if (req.body.password != (null || undefined)) {
                                 password = bcrypt.hashSync(req.body.password, 8);
                         }
-                        req.body.shopOpen = req.body.shopOpen || user.shopOpen;
+                        req.body.shopOpen = req.body.shopOpen !== null && req.body.shopOpen !== undefined ? req.body.shopOpen : user.shopOpen;
+                        // req.body.shopOpen = req.body.shopOpen || user.shopOpen;
                         req.body.fullName = req.body.fullName || user.fullName;
                         req.body.password = password || user.password;
                         let update = await User.findByIdAndUpdate(user._id, { $set: req.body }, { new: true, });
@@ -288,7 +298,7 @@ exports.removeMoney = async (req, res) => {
         try {
                 const data = await User.findOne({ _id: req.user._id, });
                 if (data) {
-                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: wallet - parseInt(req.body.balance) } }, { new: true });
+                        let update = await User.findByIdAndUpdate({ _id: data._id }, { $set: { wallet: data.wallet - parseInt(req.body.balance) } }, { new: true });
                         if (update) {
                                 let obj = {
                                         user: req.user._id,
@@ -411,15 +421,17 @@ exports.addProduct = async (req, res) => {
 };
 exports.getProducts = async (req, res) => {
         try {
+                console.log("h");
                 if (req.query.category) {
-                        const product = await Product.find({ vendorId: req.user._id, category: req.query.category });
+                        const product = await Product.find({ vendorId: req.user._id, category: req.query.category })
+                                .populate('vendorId');
                         if (product.length == 0) {
                                 return res.status(404).json({ message: "No data found", data: {} });
                         } else {
                                 return res.status(200).json({ message: "Product data found.", status: 200, data: product });
                         }
                 } else {
-                        const product = await Product.find({ vendorId: req.user._id });
+                        const product = await Product.find({ vendorId: req.user._id }).populate('vendorId').populate('category').populate('subcategory');
                         if (product.length == 0) {
                                 return res.status(404).json({ message: "No data found", data: {} });
                         } else {
@@ -433,7 +445,7 @@ exports.getProducts = async (req, res) => {
 };
 exports.getProduct = async (req, res) => {
         try {
-                const product = await Product.findById({ _id: req.params.id });
+                const product = await Product.findById({ _id: req.params.id }).populate('vendorId').populate('category').populate('subcategory');
                 if (!product) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
@@ -589,7 +601,7 @@ exports.addDiscount = async (req, res) => {
 };
 exports.getDiscount = async (req, res) => {
         try {
-                const discount = await Discount.find({ vendorId: req.user._id });
+                const discount = await Discount.find({ vendorId: req.user._id }).populate('productId');
                 if (discount.length == 0) {
                         return res.status(404).json({ message: "No data found", data: {} });
                 } else {
@@ -643,7 +655,34 @@ exports.getOrders = async (req, res, next) => {
 };
 exports.getcancelReturnOrder = async (req, res, next) => {
         try {
-                const orders = await cancelReturnOrder.find({ vendorId: req.user._id }).populate('Orders');
+                const orders = await cancelReturnOrder.find({ vendorId: req.user._id }).populate('Orders')
+                        .populate('userId')
+                        .populate('vendorId')
+                        .populate({
+                                path: 'Orders',
+                                populate: [
+                                        {
+                                                path: 'userId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'vendorId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'category',
+                                                model: 'Category'
+                                        },
+                                        {
+                                                path: 'productId',
+                                                model: 'Product'
+                                        },
+                                        {
+                                                path: 'discountId',
+                                                model: 'discount'
+                                        }
+                                ]
+                        });
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
@@ -710,6 +749,7 @@ exports.assignOrder = async (req, res) => {
                                                 date: fullDate,
                                                 Orders: findOrders._id,
                                                 deliveryStatus: "assigned",
+                                                OrderStatus: 'PENDING'
                                         }
                                         const saveOrder = await deliveryOrder.create(obj);
                                         if (saveOrder) {
@@ -791,7 +831,9 @@ exports.createOrder = async (req, res) => {
 };
 exports.getComplaint = async (req, res, next) => {
         try {
+                console.log(req.user);
                 const orders = await complaint.find({ $or: [{ userId: req.user._id }, { vendorId: req.user._id }] }).populate('userId vendorId Orders Orders.$.productId')
+                console.log("hi", orders);
                 if (orders.length == 0) {
                         return res.status(404).json({ status: 404, message: "Complain not found", data: {} });
                 }
@@ -803,7 +845,32 @@ exports.getComplaint = async (req, res, next) => {
 };
 exports.getComplainbyId = async (req, res, next) => {
         try {
-                const orders = await Complain.findById({ _id: req.params.id }).populate('vendorId userId Orders');
+                const orders = await complaint.findById({ _id: req.params.id }).populate('vendorId userId Orders')
+                        .populate({
+                                path: 'Orders',
+                                populate: [
+                                        {
+                                                path: 'userId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'vendorId',
+                                                model: 'user'
+                                        },
+                                        {
+                                                path: 'category',
+                                                model: 'Category'
+                                        },
+                                        {
+                                                path: 'productId',
+                                                model: 'Product'
+                                        },
+                                        {
+                                                path: 'discountId',
+                                                model: 'discount'
+                                        }
+                                ]
+                        });
                 if (!orders) {
                         return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
                 }
@@ -815,18 +882,26 @@ exports.getComplainbyId = async (req, res, next) => {
 };
 exports.getMetric = async (req, res, next) => {
         try {
-                let query = { vendorId: req.user._id };
                 if ((req.query.fromDate != (null || undefined)) && (req.query.toDate != (null || undefined))) {
                         query.$and = [
                                 { createdAt: { $gte: req.query.fromDate } },
                                 { createdAt: { $lte: req.query.toDate } },
                         ]
                 }
-                const orders = await orderModel.find({ query, preparingStatus: "New" }).count()
-                const orders1 = await orderModel.find({ query, preparingStatus: "Preparing" }).count()
-                const orders2 = await orderModel.find({ query, preparingStatus: "Ready" }).count()
-                const orders3 = await orderModel.find({ query, preparingStatus: "out_for_delivery" }).count()
-                const orders4 = await orderModel.find({ query, preparingStatus: "delivered" }).count()
+                const orders = await orderModel.find({ vendorId: req.user._id, preparingStatus: "New" }).count()
+                console.log("1", orders);
+                const orders1 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "Preparing" }).count()
+                console.log("2", orders);
+
+                const orders2 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "Ready" }).count()
+                console.log("3", orders);
+
+                const orders3 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "out_for_delivery" }).count()
+                console.log("4", orders);
+
+                const orders4 = await orderModel.find({ vendorId: req.user._id, preparingStatus: "delivered" }).count()
+                console.log("5", orders);
+                //enum: ["pending", "Reject", "New", "Preparing", "Ready", "out_for_delivery", "delivered"],
                 let dashboard = {
                         new: orders,
                         preparing: orders1,
