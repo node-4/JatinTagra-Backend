@@ -2,24 +2,21 @@ const { validateUser } = require("../middlewares");
 const auth = require("../controllers/user.controller");
 const { authJwt, authorizeRoles } = require("../middlewares");
 var multer = require("multer");
-const path = require("path");
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => { cb(null, "uploads"); }, filename: (req, file, cb) => { cb(null, Date.now() + path.extname(file.originalname)); },
-});
-const upload = multer({ storage: storage });
+const { cpUpload0, upload, upload1, upload2, cpUpload, categoryUpload, subCategoryUpload } = require('../middlewares/imageUpload')
 module.exports = (app) => {
     app.post("/api/v1/user/registration", auth.registration);
     app.post("/api/v1/user/login", auth.signin);
     app.post("/api/v1/user/loginWithPhone", auth.loginWithPhone);
     app.post("/api/v1/user/:id", auth.verifyOtp);
     app.get("/api/v1/user/getProfile", [authJwt.verifyToken], auth.getProfile);
-    app.put("/api/v1/user/updateProfile", [authJwt.verifyToken], auth.updateProfile);
+    app.put("/api/v1/user/updateProfile", [authJwt.verifyToken], upload.single('image'), auth.updateProfile);
     app.post("/api/v1/user/resendOtp/:id", auth.resendOTP);
     app.post("/api/v1/user/resetPassword/:id", auth.resetPassword);
     app.post("/api/v1/user/socialLogin", auth.socialLogin);
     app.get("/api/v1/user/categories", auth.getCategories);
     app.get("/api/v1/user/allProducts", auth.getProducts);
     app.get("/api/v1/user/viewProduct/:id", auth.getProduct);
+    app.get('/api/v1/user/products/category/:categoryId', auth.getProductsByCategory);
     app.post("/api/v1/user/createWishlist/:id", [authJwt.verifyToken], auth.createWishlist);
     app.post("/api/v1/user/removeFromWishlist/:id", [authJwt.verifyToken], auth.removeFromWishlist);
     app.get("/api/v1/user/myWishlist", [authJwt.verifyToken], auth.myWishlist);
@@ -49,5 +46,5 @@ module.exports = (app) => {
     app.post('/api/v1/user/order/verify-otp/:orderId', [authJwt.verifyToken], auth.verifyOTP);
     app.post('/api/v1/user/videos', [authJwt.verifyToken], auth.createVideo);
     app.get('/api/v1/user/videos', [authJwt.verifyToken], auth.getAllVideos);
-
+    app.post("/api/v1/user/Feedback/AddFeedback", [authJwt.verifyToken], auth.AddFeedback);
 };

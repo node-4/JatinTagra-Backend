@@ -18,6 +18,7 @@ const Faq = require("../models/faq.Model");
 const Notification = require('../models/notificationModel');
 const Order = require('../models/orders/orderModel');
 const Video = require('../models/wtachVideoModel');
+const feedback = require('../models/feedback');
 
 
 exports.registration = async (req, res) => {
@@ -127,6 +128,11 @@ exports.updateProfile = async (req, res) => {
                         let password;
                         if (req.body.password != (null || undefined)) {
                                 password = bcrypt.hashSync(req.body.password, 8);
+                        }
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        } else {
+                                req.body.image = user.image;
                         }
                         req.body.fullName = req.body.fullName || user.fullName;
                         req.body.password = password || user.password;
@@ -257,6 +263,23 @@ exports.getProduct = async (req, res) => {
                 return res.status(501).send({ message: "server error.", data: {}, });
         }
 };
+exports.getProductsByCategory = async (req, res) => {
+        try {
+            const categoryId = req.params.categoryId;
+    
+            const products = await Product.find({ category: categoryId });
+    
+            if (products.length === 0) {
+                return res.status(404).json({ message: "No products found for the specified category", data: {} });
+            } else {
+                return res.status(200).json({ message: "Products found for the specified category.", status: 200, data: products });
+            }
+        } catch (error) {
+            console.error(error);
+            return res.status(500).send({ message: "Server error.", data: {} });
+        }
+    };
+    
 exports.createWishlist = async (req, res, next) => {
         try {
                 const product = req.params.id;
@@ -843,7 +866,23 @@ exports.updateLocation = async (req, res) => {
                 return res.status(500).send({ status: 500, message: "Server error" + error.message });
         }
 };
+exports.AddFeedback = async (req, res) => {
+        try {
+                const { Feedback, rating } = req.body;
+                let obj = {
+                        userId: req.user._id,
+                        Feedback: Feedback,
+                        rating: rating
+                }
+                const data = await feedback.create(obj);
+                return res.status(200).json({ details: data })
 
+        } catch (err) {
+                console.log(err);
+                return res.status(400).json({ message: err.message })
+        }
+
+};
 
 
 exports.createNotification = async (req, res) => {
@@ -911,69 +950,69 @@ function generateOTP() {
 
 
 exports.sendOTP = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { mobileNumber } = req.body; 
-    const order = await Order.findById(orderId);
+        try {
+                const { orderId } = req.params;
+                const { mobileNumber } = req.body;
+                const order = await Order.findById(orderId);
 
-    if (!order) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
-    }
+                if (!order) {
+                        return res.status(404).json({ success: false, message: 'Order not found' });
+                }
 
-    const otp = generateOTP();
-    order.paymentRecived.otp = otp; 
-    order.paymentRecived.mobileNumber = mobileNumber;
-    await order.save();
+                const otp = generateOTP();
+                order.paymentRecived.otp = otp;
+                order.paymentRecived.mobileNumber = mobileNumber;
+                await order.save();
 
-    return res.status(200).json({ success: true, message: 'OTP sent', otp });
-  } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
+                return res.status(200).json({ success: true, message: 'OTP sent', otp });
+        } catch (error) {
+                console.error('Error sending OTP:', error);
+                res.status(500).json({ success: false, message: 'Internal server error' });
+        }
 };
 
 exports.verifyOTP = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { otp } = req.body;
-    const order = await Order.findById(orderId);
+        try {
+                const { orderId } = req.params;
+                const { otp } = req.body;
+                const order = await Order.findById(orderId);
 
-    if (!order) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
-    }
+                if (!order) {
+                        return res.status(404).json({ success: false, message: 'Order not found' });
+                }
 
-    if (order.paymentRecived.otp === otp) { 
-      return res.status(200).json({ success: true, message: 'OTP is valid' });
-    } else {
-      return res.status(400).json({ success: false, message: 'Invalid OTP' });
-    }
-  } catch (error) {
-    console.error('Error verifying OTP:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
+                if (order.paymentRecived.otp === otp) {
+                        return res.status(200).json({ success: true, message: 'OTP is valid' });
+                } else {
+                        return res.status(400).json({ success: false, message: 'Invalid OTP' });
+                }
+        } catch (error) {
+                console.error('Error verifying OTP:', error);
+                res.status(500).json({ success: false, message: 'Internal server error' });
+        }
 };
 
 
 exports.createVideo = async (req, res) => {
-    try {
-        const { videoLink, image, description } = req.body;
-        const video = new Video({ videoLink, image, description });
-        await video.save();
-        res.status(201).json({ status: 201, message: 'Video created successfully', data: video });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ status: 500, message: 'Error creating video', error: error.message });
-    }
+        try {
+                const { videoLink, image, description } = req.body;
+                const video = new Video({ videoLink, image, description });
+                await video.save();
+                res.status(201).json({ status: 201, message: 'Video created successfully', data: video });
+        } catch (error) {
+                console.error(error);
+                res.status(500).json({ status: 500, message: 'Error creating video', error: error.message });
+        }
 };
 
 
 exports.getAllVideos = async (req, res) => {
         try {
-            const videos = await Video.find();
-            res.status(200).json({ status: 200, message: 'Videos retrieved successfully', data: videos });
+                const videos = await Video.find();
+                res.status(200).json({ status: 200, message: 'Videos retrieved successfully', data: videos });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ status: 500, message: 'Error fetching videos', error: error.message });
+                console.error(error);
+                res.status(500).json({ status: 500, message: 'Error fetching videos', error: error.message });
         }
-    };
+};
 
